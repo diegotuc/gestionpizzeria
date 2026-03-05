@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reporte de Ventas</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <h1>📊 Reporte de Ventas</h1>
+  <table border="1" width="100%" cellpadding="8">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Fecha</th>
+        <th>Total Bruto</th>
+        <th>Descuento</th>
+        <th>Total Final</th>
+        <th>Tipo</th>
+      </tr>
+    </thead>
+    <tbody id="tablaVentas">
+    </tbody>
+  </table>
+  <div id="estadisticas" class="estadisticas"></div>
+  <h3>📈 Ventas por día</h3>
+ <div style="width: 60%; max-width: 500px;">
+  <canvas id="graficoVentas"></canvas>
+</div>
+ 
+
+  <br>
+  <a href="venta.html">⬅ Volver a ventas</a>
+
+  <script src="reporte.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Clientes</title>
+
+<!-- ================================
+CSS CLIENTES
+================================ -->
+<link rel="stylesheet" href="/css/styles_clientes.css">
+
+</head>
+
+<body>
+
+<h1>👥 Clientes</h1>
+
+<div class="card">
+
+<h3>Buscar cliente</h3>
+
+<input type="text" id="telefonoBuscar" placeholder="Teléfono">
+
+<button id="buscarCliente">
+Buscar
+</button>
+
+</div>
+
+<div class="card" id="infoCliente" style="display:none;">
+
+<h3>Datos del cliente</h3>
+
+<div class="dato">
+<strong>Nombre:</strong>
+<span id="nombreCliente"></span>
+</div>
+
+<div class="dato">
+<strong>Teléfono:</strong>
+<span id="telefonoCliente"></span>
+</div>
+
+<div class="dato">
+<strong>Pizzas acumuladas:</strong>
+<span id="pizzasCliente"></span>
+</div>
+
+<button id="verHistorial">
+Ver historial
+</button>
+
+<div class="historial" id="historialVentas"></div>
+
+</div>
+
+<div id="resumenCliente" style="margin-top:10px;font-weight:bold;"></div>
+
+<!-- ====================================== -->
+<!-- RESUMEN INTELIGENTE DEL CLIENTE -->
+<!-- ====================================== -->
+
+<div class="card" id="resumenCard" style="display:none;">
+
+    <h3>📊 Resumen del cliente</h3>
+    
+    <div class="dato">
+    <strong>Compras:</strong>
+    <span id="resumenCompras"></span>
+    </div>
+    
+    <div class="dato">
+    <strong>Pizzas compradas:</strong>
+    <span id="resumenPizzas"></span>
+    </div>
+    
+    <div class="dato">
+    <strong>Promedio por compra:</strong>
+    <span id="resumenPromedio"></span>
+    </div>
+    
+    <div class="dato">
+    <strong>Última compra:</strong>
+    <span id="resumenUltima"></span>
+    </div>
+    
+    </div>
+
+<!-- ================================
+JS CLIENTES
+================================ -->
+<script src="/js/clientes.js"></script>
+
+</body>
+</html>

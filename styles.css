@@ -1,0 +1,176 @@
+/* RESET BÁSICO */
+* {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+/* BODY */
+body {
+  margin: 0;
+  background: #f4f4f4;
+  padding-bottom: 90px;
+}
+
+/* HEADER */
+header {
+  background: #d32f2f;
+  color: white;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* TARJETAS */
+.card {
+  background: white;
+  margin: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+/* INPUTS */
+input, select {
+  width: 100%;
+  padding: 0.6rem;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+}
+
+/* SABORES */
+.sabores-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+}
+
+.sabor-btn {
+  padding: 1.2rem;
+  font-size: 1rem;
+  background: #ffebee;
+  border: 1px solid #d32f2f;
+  border-radius: 6px;
+}
+
+.sabor-btn:active {
+  background: #d32f2f;
+  color: white;
+}
+
+/* TICKET */
+#ticket {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+}
+
+.ticket-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.item-info small {
+  display: block;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* CONTROLES DEL TICKET */
+.item-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.btn.menos {
+  background: #ff9305;
+  
+}
+
+.btn.mas {
+  background: #388e3c;
+  color: white;
+}
+
+.btn.borrar {
+  background: #c62828;
+  color: white;
+}
+
+/* PRECIO */
+.item-precio {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+/* TOTALES */
+.linea, .total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+}
+
+.total {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* ACCIONES */
+.acciones {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+}
+
+.confirmar {
+  flex: 2;
+  padding: 1rem;
+  background: #388e3c;
+  color: white;
+  border: none;
+  font-size: 1.1rem;
+}
+
+.cancelar {
+  flex: 1;
+  padding: 1rem;
+  background: #b71c1c;
+  color: white;
+  border: none;
+  font-size: 1.1rem;
+}
+
+.mensaje {
+  margin: 1rem;
+  padding: 0.8rem;
+  border-radius: 6px;
+  font-weight: bold;
+  text-align: center;
+  transition: opacity 0.3s ease;
+}
+
+.mensaje.exito {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #2e7d32;
+}
+
+.mensaje.error {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #c62828;
+}
+
+.oculto {
+  display: none;
+}

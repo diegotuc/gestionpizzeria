@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Venta Diaria</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header>
+    <h1>🧾 Venta Diaria</h1>
+  </header>
+ 
+  
+
+<!-- CLIENTE -->
+<section class="card">
+  <h2>Cliente</h2>
+  <input type="text" id="clienteNombre" placeholder="Nombre">
+  <input type="text" id="clienteTelefono" placeholder="Teléfono">
+  
+  <select id="tipoCliente">
+    <option value="minorista">Minorista</option>
+    <option value="mayorista">Mayorista</option>
+    <option value="revendedor">Revendedor</option>
+  </select>
+</section>
+
+
+
+<!-- SABORES -->
+<section class="card">
+  <h2>Sabores</h2>
+  <div id="listaSabores" class="sabores-grid"></div>
+</section>
+
+<!--MESAJE DE VENTA REALIZADA, ERROR O CANCELADA-->
+
+<div id="mensajeSistema" class="mensaje oculto"></div>
+
+<!-- TICKET -->
+<section class="card">
+  <h2>Ticket</h2>
+  <ul id="ticket"></ul>
+
+  <div class="linea">
+    <span>Descuento</span>
+    <span id="descuento">$0</span>
+  </div>
+
+  <div class="total">
+    <span>TOTAL</span>
+    <span id="total">$0</span>
+  </div>
+</section>
+
+
+<!-- ACCIONES -->
+<section class="acciones">
+  <button class="confirmar">Confirmar venta</button>
+  <button class="cancelar">Cancelar</button>
+</section>
+
+
+<script src="app.js"></script>
+</body>
+</html>

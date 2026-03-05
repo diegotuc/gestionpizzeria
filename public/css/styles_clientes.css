@@ -1,0 +1,83 @@
+/* ======================================
+ESTILOS GENERALES CLIENTES
+====================================== */
+
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    background:#f4f4f4;
+    padding:30px;
+  }
+  
+  h1{
+    margin-bottom:20px;
+  }
+  
+  /* ======================================
+  TARJETAS
+  ====================================== */
+  
+  .card{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.1);
+    margin-bottom:20px;
+    max-width:600px;
+  }
+  
+  /* ======================================
+  INPUTS
+  ====================================== */
+  
+  input{
+    padding:10px;
+    width:200px;
+    margin-right:10px;
+  }
+  
+  /* ======================================
+  BOTONES
+  ====================================== */
+  
+  button{
+    padding:10px 15px;
+    border:none;
+    background:#3498db;
+    color:white;
+    border-radius:5px;
+    cursor:pointer;
+  }
+  
+  button:hover{
+    background:#2980b9;
+  }
+  
+  /* ======================================
+  DATOS CLIENTE
+  ====================================== */
+  
+  .dato{
+    margin:10px 0;
+  }
+  
+  /* ======================================
+  HISTORIAL
+  ====================================== */
+  
+  .historial{
+    margin-top:20px;
+  }
+  
+  .historial ul{
+    padding-left:20px;
+  }
+
+  /* =========================================
+RESUMEN DEL CLIENTE
+========================================= */
+
+#resumenCard{
+  margin-top:20px;
+  background:#fefefe;
+  border-left:5px solid #2ecc71;
+  }
