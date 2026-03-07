@@ -498,6 +498,26 @@ app.get("/ventas/:id", (req, res) => {
 
 });
 
+// ===============================
+// ENDPOINT: Ventas por día
+// ===============================
+app.get("/ventas/por-dia", (req, res) => {
+
+  const ventas = db.prepare(`
+      SELECT 
+          DATE(fecha) as dia,
+          COUNT(*) as compras,
+          SUM(cantidad) as pizzas
+      FROM ventas
+      GROUP BY dia
+      ORDER BY dia DESC
+      LIMIT 30
+  `).all();
+
+  res.json(ventas);
+
+});
+
 
 // =====================================================
 // DEBUG - VER TABLAS
@@ -621,6 +641,167 @@ app.get("/debug/clientes", (req, res) => {
       res.json(rows);
     }
   });
+});
+
+// ======================================
+// TOP CLIENTES POR PIZZAS COMPRADAS
+// API: /clientes/top
+// ======================================
+
+app.get("/clientes/top", (req, res) => {
+
+  db.all(
+    `SELECT nombre, telefono, pizzas_acumuladas
+     FROM clientes
+     ORDER BY pizzas_acumuladas DESC
+     LIMIT 10`,
+    [],
+    (err, rows) => {
+
+      if (err) {
+        console.error("Error obteniendo ranking:", err.message);
+        return res.status(500).json({ error: "Error obteniendo ranking" });
+      }
+
+      res.json(rows);
+
+    }
+  );
+
+});
+
+// ======================================
+// RESUMEN GENERAL DEL NEGOCIO (DASHBOARD)
+// API: /dashboard/resumen
+// ======================================
+
+app.get("/dashboard/resumen", (req, res) => {
+
+  const hoy = new Date().toISOString().slice(0,10);
+
+  const queryVentas = `
+  SELECT
+  COUNT(*) as ventas,
+  SUM(total_final) as total_dia
+  FROM ventas
+  WHERE DATE(fecha) = ?
+  `;
+
+  const queryPizzas = `
+  SELECT
+  SUM(cantidad) as pizzas
+  FROM detalle_venta dv
+  JOIN ventas v ON dv.venta_id = v.id
+  WHERE DATE(v.fecha) = ?
+  `;
+
+  const queryTopPizza = `
+  SELECT
+  nombre_producto,
+  SUM(cantidad) as total
+  FROM detalle_venta
+  GROUP BY nombre_producto
+  ORDER BY total DESC
+  LIMIT 1
+  `;
+
+  db.get(queryVentas, [hoy], (err, ventasData)=>{
+
+    if(err){
+      console.error(err);
+      return res.status(500).json({error:"Error ventas"});
+    }
+
+    db.get(queryPizzas, [hoy], (err, pizzasData)=>{
+
+      if(err){
+        console.error(err);
+        return res.status(500).json({error:"Error pizzas"});
+      }
+
+      db.get(queryTopPizza, [], (err, topPizza)=>{
+
+        if(err){
+          console.error(err);
+          return res.status(500).json({error:"Error top pizza"});
+        }
+
+        res.json({
+
+          ventas: ventasData.ventas || 0,
+          total_dia: ventasData.total_dia || 0,
+          pizzas: pizzasData.pizzas || 0,
+          top_pizza: topPizza ? topPizza.nombre_producto : "Sin datos"
+
+        });
+
+      });
+
+    });
+
+  });
+
+});
+
+
+// ======================================
+// DASHBOARD - VENTAS DE LA SEMANA
+// API: /dashboard/ventas-semana
+// ======================================
+
+app.get("/dashboard/ventas-semana", (req, res) => {
+
+  const query = `
+  SELECT
+  DATE(fecha) as dia,
+  SUM(total_final) as total
+  FROM ventas
+  WHERE fecha >= date('now','-6 day')
+  GROUP BY DATE(fecha)
+  ORDER BY dia
+  `;
+
+  db.all(query, [], (err, rows) => {
+
+    if (err) {
+      console.error("Error dashboard semana:", err);
+      return res.status(500).json({ error: "Error ventas semana" });
+    }
+
+    res.json(rows);
+
+  });
+
+});
+
+// ======================================
+// DASHBOARD - PIZZAS POR SABOR
+// API: /dashboard/pizzas-sabor
+// ======================================
+
+app.get("/dashboard/pizzas-sabor", (req, res) => {
+
+  const query = `
+  SELECT
+  nombre_producto as sabor,
+  SUM(cantidad) as total
+  FROM detalle_venta
+  GROUP BY nombre_producto
+  ORDER BY total DESC
+  LIMIT 10
+  `;
+
+  db.all(query, [], (err, rows) => {
+
+    if (err) {
+      console.error("Error pizzas sabor:", err);
+      return res.status(500).json({ error: "Error pizzas sabor" });
+    }
+
+    res.json(rows);
+
+  });
+
 });
 
 // =====================================================

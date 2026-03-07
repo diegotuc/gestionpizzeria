@@ -1,0 +1,66 @@
+/* ======================================
+ESTILO GENERAL PAGINA RANKING
+====================================== */
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    background:#f4f4f4;
+    padding:30px;
+  }
+  
+  h1{
+    margin-bottom:20px;
+  }
+  
+  /* ======================================
+  CARD CONTENEDOR
+  ====================================== */
+  
+  .card{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    max-width:600px;
+    box-shadow:0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  /* ======================================
+  BOTON
+  ====================================== */
+  
+  button{
+    padding:10px 15px;
+    border:none;
+    background:#3498db;
+    color:white;
+    border-radius:5px;
+    cursor:pointer;
+  }
+  
+  button:hover{
+    background:#2980b9;
+  }
+  
+  /* ======================================
+  LISTA RANKING
+  ====================================== */
+  
+  .ranking-item{
+    display:flex;
+    justify-content:space-between;
+    padding:10px;
+    border-bottom:1px solid #eee;
+  }
+  
+  .ranking-pos{
+    font-weight:bold;
+  }
+  
+  .ranking-nombre{
+    flex:1;
+    margin-left:10px;
+  }
+  
+  .ranking-pizzas{
+    font-weight:bold;
+  }
