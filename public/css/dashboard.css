@@ -63,3 +63,23 @@ GRAFICOS
     border-radius:10px;
     box-shadow:0 0 10px rgba(0,0,0,0.1);
     }
+
+    /* ======================================
+TOP PIZZAS
+====================================== */
+
+.ranking{
+    max-width:400px;
+    margin-top:30px;
+    }
+    
+    .ranking ul{
+    list-style:none;
+    padding:0;
+    }
+    
+    .ranking li{
+    padding:8px;
+    border-bottom:1px solid #ddd;
+    font-size:16px;
+    }

@@ -5,6 +5,8 @@
 const ventasDia = document.getElementById("ventasDia");
 const totalDia = document.getElementById("totalDia");
 const pizzasDia = document.getElementById("pizzasDia");
+const clientesHoy = document.getElementById("clientesHoy");
+const ticketPromedio = document.getElementById("ticketPromedio");   
 const topPizza = document.getElementById("topPizza");
 
 
@@ -41,14 +43,16 @@ async function cargarVentasPorDia() {
 
 async function cargarDashboard(){
 
-const res = await fetch("/dashboard/resumen");
-const datos = await res.json();
-
-ventasDia.textContent = datos.ventas;
-totalDia.textContent = "$" + datos.total_dia;
-pizzasDia.textContent = datos.pizzas;
-topPizza.textContent = datos.top_pizza;
-
+    const res = await fetch("/dashboard/resumen");
+    const datos = await res.json();
+    
+    ventasDia.textContent = datos.ventas;
+    totalDia.textContent = "$" + datos.total_dia;
+    pizzasDia.textContent = datos.pizzas;
+    clientesHoy.textContent = datos.clientes;
+    ticketPromedio.textContent = "$" + datos.ticket_promedio;
+    topPizza.textContent = datos.top_pizza;
+ 
 }
 
 // ======================================
@@ -108,6 +112,34 @@ data:valores
 }
 
 // ======================================
+// CARGAR TOP 5 PIZZAS
+// ======================================
+
+async function cargarTopPizzas(){
+
+    const res = await fetch("/dashboard/top-pizzas");
+    const datos = await res.json();
+    
+    const lista = document.getElementById("topPizzas");
+    
+    lista.innerHTML = "";
+    
+    datos.forEach((pizza,i)=>{
+    
+    const li = document.createElement("li");
+    
+    li.textContent =
+    (i+1) + " - " + pizza.nombre_producto +
+    " (" + pizza.total + ")";
+    
+    lista.appendChild(li);
+    
+    });
+    
+    }
+    
+
+// ======================================
 // INICIALIZAR DASHBOARD
 // ======================================
 
@@ -115,6 +147,6 @@ cargarDashboard();
 cargarVentasPorDia();
 cargarGraficoVentas();
 cargarGraficoSabores();
-
+cargarTopPizzas();
 
 setInterval(cargarDashboard,10000);

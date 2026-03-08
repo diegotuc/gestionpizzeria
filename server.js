@@ -679,59 +679,97 @@ app.get("/dashboard/resumen", (req, res) => {
 
   const hoy = new Date().toISOString().slice(0,10);
 
-  const queryVentas = `
-  SELECT
-  COUNT(*) as ventas,
-  SUM(total_final) as total_dia
-  FROM ventas
-  WHERE DATE(fecha) = ?
-  `;
+  const datos = {};
 
-  const queryPizzas = `
-  SELECT
-  SUM(cantidad) as pizzas
-  FROM detalle_venta dv
-  JOIN ventas v ON dv.venta_id = v.id
-  WHERE DATE(v.fecha) = ?
-  `;
+  // ======================================
+  // VENTAS Y FACTURACIÓN DEL DÍA
+  // ======================================
 
-  const queryTopPizza = `
-  SELECT
-  nombre_producto,
-  SUM(cantidad) as total
-  FROM detalle_venta
-  GROUP BY nombre_producto
-  ORDER BY total DESC
-  LIMIT 1
-  `;
-
-  db.get(queryVentas, [hoy], (err, ventasData)=>{
+  db.get(`
+    SELECT 
+    COUNT(*) as ventas,
+    IFNULL(SUM(total_final),0) as total
+    FROM ventas
+    WHERE DATE(fecha) = ?
+  `,[hoy],(err,row)=>{
 
     if(err){
-      console.error(err);
-      return res.status(500).json({error:"Error ventas"});
+      console.error("Error ventas hoy:", err);
+      return res.status(500).json({error:"Error ventas hoy"});
     }
 
-    db.get(queryPizzas, [hoy], (err, pizzasData)=>{
+    datos.ventas = row ? row.ventas : 0;
+    datos.total_dia = row ? row.total : 0;
+
+    // ======================================
+    // PIZZAS VENDIDAS HOY
+    // ======================================
+
+    db.get(`
+      SELECT IFNULL(SUM(cantidad),0) as pizzas
+      FROM detalle_venta dv
+      JOIN ventas v ON dv.venta_id = v.id
+      WHERE DATE(v.fecha) = ?
+    `,[hoy],(err,row2)=>{
 
       if(err){
-        console.error(err);
-        return res.status(500).json({error:"Error pizzas"});
+        console.error("Error pizzas hoy:", err);
+        datos.pizzas = 0;
+      }else{
+        datos.pizzas = row2 ? row2.pizzas : 0;
       }
 
-      db.get(queryTopPizza, [], (err, topPizza)=>{
+      // ======================================
+      // COMPRAS REALIZADAS HOY
+      // (No usamos cliente_id porque no existe)
+      // ======================================
+
+      db.get(`
+        SELECT COUNT(*) as clientes
+        FROM ventas
+        WHERE DATE(fecha) = ?
+      `,[hoy],(err,row3)=>{
 
         if(err){
-          console.error(err);
-          return res.status(500).json({error:"Error top pizza"});
+          console.error("Error compras hoy:", err);
+          datos.clientes = 0;
+        }else{
+          datos.clientes = row3 ? row3.clientes : 0;
         }
 
-        res.json({
+        // ======================================
+        // PIZZA MÁS VENDIDA (HISTÓRICO)
+        // ======================================
 
-          ventas: ventasData.ventas || 0,
-          total_dia: ventasData.total_dia || 0,
-          pizzas: pizzasData.pizzas || 0,
-          top_pizza: topPizza ? topPizza.nombre_producto : "Sin datos"
+        db.get(`
+          SELECT nombre_producto
+          FROM detalle_venta
+          GROUP BY nombre_producto
+          ORDER BY SUM(cantidad) DESC
+          LIMIT 1
+        `,[],(err,row4)=>{
+
+          if(err){
+            console.error("Error top pizza:", err);
+            datos.top_pizza = "-";
+          }else{
+            datos.top_pizza = row4 ? row4.nombre_producto : "-";
+          }
+
+          // ======================================
+          // TICKET PROMEDIO
+          // ======================================
+
+          datos.ticket_promedio =
+            datos.ventas > 0
+              ? Math.round(datos.total_dia / datos.ventas)
+              : 0;
+
+          // ======================================
+          // RESPUESTA FINAL DEL DASHBOARD
+          // ======================================
+
+          res.json(datos);
 
         });
 
@@ -803,6 +841,35 @@ app.get("/dashboard/pizzas-sabor", (req, res) => {
   });
 
 });
+
+// ======================================
+// TOP 5 PIZZAS MÁS VENDIDAS
+// API: /dashboard/top-pizzas
+// ======================================
+
+app.get("/dashboard/top-pizzas", (req, res) => {
+
+  db.all(`
+    SELECT 
+      nombre_producto,
+      SUM(cantidad) as total
+    FROM detalle_venta
+    GROUP BY nombre_producto
+    ORDER BY total DESC
+    LIMIT 5
+  `, [], (err, rows) => {
+
+    if(err){
+      console.error("Error top pizzas:", err);
+      return res.status(500).json({error:"Error top pizzas"});
+    }
+
+    res.json(rows);
+
+  });
+
+});
+
 
 // =====================================================
 // INICIAR SERVIDOR

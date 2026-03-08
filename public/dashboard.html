@@ -19,30 +19,37 @@
 
 <div class="grid">
 
-<div class="card">
-<h3>Ventas del día</h3>
-<p id="ventasDia">0</p>
-</div>
-
-<h2>Ventas por día</h2>
-<div id="ventasPorDia"></div>
-
-<div class="card">
-<h3>Facturación hoy</h3>
-<p id="totalDia">$0</p>
-</div>
-
-<div class="card">
-<h3>Pizzas vendidas</h3>
-<p id="pizzasDia">0</p>
-</div>
-
-<div class="card">
-<h3>Pizza más vendida</h3>
-<p id="topPizza">-</p>
-</div>
-
-</div>
+    <div class="card">
+    <h3>Ventas del día</h3>
+    <p id="ventasDia">0</p>
+    </div>
+    
+    <div class="card">
+    <h3>Facturación hoy</h3>
+    <p id="totalDia">$0</p>
+    </div>
+    
+    <div class="card">
+    <h3>Pizzas vendidas</h3>
+    <p id="pizzasDia">0</p>
+    </div>
+    
+    <div class="card">
+    <h3>Clientes hoy</h3>
+    <p id="clientesHoy">0</p>
+    </div>
+    
+    <div class="card">
+    <h3>Ticket promedio</h3>
+    <p id="ticketPromedio">$0</p>
+    </div>
+    
+    <div class="card">
+    <h3>Pizza más vendida</h3>
+    <p id="topPizza">-</p>
+    </div>
+    
+ </div>
 
 <div class="graficos">
 
@@ -50,6 +57,18 @@
 <h3>Ventas de la semana</h3>
 <canvas id="graficoVentas"></canvas>
 </div>
+
+<!-- ====================================== -->
+<!-- TOP PIZZAS MÁS VENDIDAS -->
+<!-- ====================================== -->
+
+<div class="card ranking">
+
+    <h3>Top 5 pizzas</h3>
+    
+    <ul id="topPizzas"></ul>
+    
+    </div>
 
 <div class="grafico">
 <h3>Pizzas por sabor</h3>
