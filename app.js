@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
 //RUTA PARA VER HISTORIAL DEL CLIENTE
 //=====================================
 
-app.get("/clientes/historial/:telefono", (req, res) => {
+/*app.get("/clientes/historial/:telefono", (req, res) => {
 
   const telefono = req.params.telefono;
 
@@ -76,7 +76,7 @@ app.get("/clientes/historial/:telefono", (req, res) => {
   }
 
   res.json(cliente.historial);
-});
+});*/
 
 
   // =====================================================
@@ -374,7 +374,8 @@ confirmarBtn.addEventListener("click", async () => {
       mostrarMensaje("⚠️ Ingresá el teléfono del cliente", "error");
       return;
     }
-  
+    const metodoPago = document.getElementById("metodoPago").value;
+    
     const response = await fetch("/ventas", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -382,7 +383,8 @@ confirmarBtn.addEventListener("click", async () => {
         nombre: nombre,
         telefono: telefono,
         tipo_cliente: tipoClienteEl.value,
-        productos: productosDetalle
+        productos: productosDetalle,
+        metodo_pago: metodoPago
       })
     });
   

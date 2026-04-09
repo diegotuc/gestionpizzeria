@@ -94,6 +94,44 @@ db.serialize(() => {
     )
   `);
 
+  db.run(`
+CREATE TABLE IF NOT EXISTS caja (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  fecha_apertura DATETIME DEFAULT CURRENT_TIMESTAMP,
+  fecha_cierre DATETIME,
+  estado TEXT NOT NULL DEFAULT 'ABIERTA',
+  monto_inicial REAL NOT NULL DEFAULT 0,
+  monto_final REAL
+)
+`);
+
+db.run(`  
+CREATE TABLE IF NOT EXISTS movimientos_caja (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  caja_id INTEGER NOT NULL,
+  tipo TEXT NOT NULL, -- INGRESO / EGRESO
+  categoria TEXT NOT NULL, -- VENTA, GASTO, AJUSTE
+  monto REAL NOT NULL,
+  metodo_pago TEXT,
+  referencia_id INTEGER,
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (caja_id) REFERENCES caja(id)
+ )
+ `)
+
+});
+
+
+app.get("/debug/caja", (req, res) => {
+  db.all(`SELECT * FROM movimientos_caja`, [], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Error leyendo caja" });
+    }
+
+    res.json(rows);
+  });
 });
 
 
@@ -144,178 +182,205 @@ app.get("/init-productos", (req, res) => {
 // CREAR VENTA + FIDELIZACION CLIENTE
 // =====================================================
 
-app.post("/ventas", (req, res) => {
+  app.post("/ventas", (req, res) => {
 
-  //const telefono = req.body.telefono;
-  const pizzas = req.body.pizzas;
-  
-  let cliente = clientes.find(c => c.telefono === telefono);
-  
-  if (cliente) {
-    cliente.pizzas += pizzas;
-    cliente.historial.push({
-      fecha: new Date(),
-      pizzas: pizzas
-    });
-  } else {
-    clientes.push({
-      telefono: telefono,
-      pizzas: pizzas,
-      historial: [{
-        fecha: new Date(),
-        pizzas: pizzas
-      }]
-    });
-  }
+    const { nombre, telefono, tipo_cliente, productos,metodo_pago } = req.body;
 
-
-  const { nombre, telefono, tipo_cliente, productos } = req.body;
-
-  if (!telefono || !productos || productos.length === 0) {
-    return res.status(400).json({ error: "Datos incompletos" });
-  }
-
-  // -------------------------
-  // CALCULAR PIZZAS DE ESTA VENTA
-  // -------------------------
-
-  let pizzasVenta = 0;
-  let precios = [];
-  let total_bruto = 0;
-
-  productos.forEach(p => {
-    pizzasVenta += p.cantidad;
-    total_bruto += p.precio * p.cantidad;
-
-    for (let i = 0; i < p.cantidad; i++) {
-      precios.push(p.precio);
+    if (!telefono || !productos || productos.length === 0) {
+      return res.status(400).json({ error: "Datos incompletos" });
     }
-  });
 
-  // -------------------------
-  // BUSCAR CLIENTE
-  // -------------------------
+    // -------------------------
+    // CALCULAR PIZZAS DE ESTA VENTA
+    // -------------------------
 
-  db.get(
-    `SELECT * FROM clientes WHERE telefono = ?`,
-    [telefono],
-    (err, cliente) => {
+    let pizzasVenta = 0;
+    let precios = [];
+    let total_bruto = 0;
 
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: "Error buscando cliente" });
+    productos.forEach(p => {
+      pizzasVenta += p.cantidad;
+      total_bruto += p.precio * p.cantidad;
+
+      for (let i = 0; i < p.cantidad; i++) {
+        precios.push(p.precio);
       }
+    });
 
-      // -------------------------
-      // SI NO EXISTE → CREAR CLIENTE
-      // -------------------------
+    // -------------------------
+    // BUSCAR CLIENTE
+    // -------------------------
 
-      if (!cliente) {
+    db.get(
+      `SELECT * FROM clientes WHERE telefono = ?`,
+      [telefono],
+      (err, cliente) => {
 
-        db.run(
-          `INSERT INTO clientes (nombre, telefono, tipo_cliente, pizzas_acumuladas)
-           VALUES (?, ?, ?, ?)`,
-          [nombre || "Cliente", telefono, tipo_cliente, pizzasVenta]
-        );
-
-        cliente = {
-          pizzas_acumuladas: 0
-        };
-      }
-
-      const acumuladasAntes = cliente.pizzas_acumuladas || 0;
-      const acumuladasAhora = acumuladasAntes + pizzasVenta;
-
-      // -------------------------
-      // CALCULAR PROMO
-      // -------------------------
-
-      const bloquesAntes = Math.floor(acumuladasAntes / 5);
-      const bloquesAhora = Math.floor(acumuladasAhora / 5);
-
-      const promosActivadas = bloquesAhora - bloquesAntes;
-
-      let descuento = 0;
-
-      if (promosActivadas > 0) {
-
-        precios.sort((a, b) => a - b);
-
-        const precioMasBarato = precios[0];
-
-        descuento = precioMasBarato * 0.25 * promosActivadas;
-      }
-
-      const total_final = total_bruto - descuento;
-
-      // -------------------------
-      // GUARDAR VENTA
-      // -------------------------
-
-      db.run(
-        `INSERT INTO ventas (total_bruto, descuento, total_final, tipo_descuento)
-         VALUES (?, ?, ?, ?)`,
-        [
-          total_bruto,
-          descuento,
-          total_final,
-          descuento > 0 ? "promo_fidelizacion" : "ninguno"
-        ],
-        function (err) {
-
-          if (err) {
-            console.error(err);
-            return res.status(500).json({ error: "Error guardando venta" });
-          }
-
-          const ventaId = this.lastID;
-
-          // -------------------------
-          // GUARDAR DETALLE
-          // -------------------------
-
-          productos.forEach(p => {
-
-            db.run(
-              `INSERT INTO detalle_venta 
-              (venta_id, nombre_producto, cantidad, precio_unitario)
-              VALUES (?, ?, ?, ?)`,
-              [
-                ventaId,
-                p.nombre,
-                p.cantidad,
-                p.precio
-              ]
-            );
-
-          });
-
-          // -------------------------
-          // ACTUALIZAR ACUMULADAS
-          // -------------------------
-
-          db.run(
-            `UPDATE clientes 
-             SET pizzas_acumuladas = ?
-             WHERE telefono = ?`,
-            [acumuladasAhora, telefono]
-          );
-
-          res.json({
-            mensaje: "Venta registrada",
-            descuento,
-            acumuladas: acumuladasAhora,
-            promos_activadas: promosActivadas
-          });
-
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ error: "Error buscando cliente" });
         }
 
-      );
+        // -------------------------
+        // SI NO EXISTE → CREAR CLIENTE
+        // -------------------------
 
+        if (!cliente) {
+
+          db.run(
+            `INSERT INTO clientes (nombre, telefono, tipo_cliente, pizzas_acumuladas)
+            VALUES (?, ?, ?, ?)`,
+            [nombre || "Cliente", telefono, tipo_cliente, pizzasVenta]
+          );
+
+          cliente = {
+            pizzas_acumuladas: 0
+          };
+        }
+
+        const acumuladasAntes = cliente.pizzas_acumuladas || 0;
+        const acumuladasAhora = acumuladasAntes + pizzasVenta;
+
+        // -------------------------
+        // CALCULAR PROMO
+        // -------------------------
+
+        const bloquesAntes = Math.floor(acumuladasAntes / 5);
+        const bloquesAhora = Math.floor(acumuladasAhora / 5);
+
+        const promosActivadas = bloquesAhora - bloquesAntes;
+
+        let descuento = 0;
+
+        if (promosActivadas > 0) {
+
+          precios.sort((a, b) => a - b);
+
+          const precioMasBarato = precios[0];
+
+          descuento = precioMasBarato * 0.25 * promosActivadas;
+        }
+
+        const total_final = total_bruto - descuento;
+
+        // -------------------------
+        // GUARDAR VENTA
+        // -------------------------
+
+        db.run(
+          `INSERT INTO ventas (total_bruto, descuento, total_final, tipo_descuento)
+          VALUES (?, ?, ?, ?)`,
+          [
+            total_bruto,
+            descuento,
+            total_final,
+            descuento > 0 ? "promo_fidelizacion" : "ninguno"
+          ],
+          function (err) {
+
+            if (err) {
+              console.error(err);
+              return res.status(500).json({ error: "Error guardando venta" });
+            }
+
+            const ventaId = this.lastID;
+
+            // -------------------------
+            // GUARDAR DETALLE
+            // -------------------------
+
+            productos.forEach(p => {
+
+              db.run(
+                `INSERT INTO detalle_venta 
+                (venta_id, nombre_producto, cantidad, precio_unitario)
+                VALUES (?, ?, ?, ?)`,
+                [
+                  ventaId,
+                  p.nombre,
+                  p.cantidad,
+                  p.precio
+                ]
+              );
+
+            });
+
+            // -------------------------
+            // ACTUALIZAR ACUMULADAS
+            // -------------------------
+
+            db.run(
+              `UPDATE clientes 
+              SET pizzas_acumuladas = ?
+              WHERE telefono = ?`,
+              [acumuladasAhora, telefono]
+            );
+
+              // -------------------------
+// REGISTRAR EN CAJA
+// -------------------------
+
+db.get(
+  `SELECT * FROM caja WHERE estado = 'ABIERTA' LIMIT 1`,
+  [],
+  (err, caja) => {
+
+    if (err) {
+      console.error("Error buscando caja:", err);
+      return;
     }
-  );
 
-});
+    const registrarMovimiento = (cajaId) => {
+      db.run(
+        `INSERT INTO movimientos_caja 
+        (caja_id, tipo, categoria, monto, metodo_pago, referencia_id)
+        VALUES (?, 'INGRESO', 'VENTA', ?, ?, ?)`,
+        [cajaId, total_final, metodo_pago, ventaId],
+        (err) => {
+          if (err) {
+            console.error("Error registrando movimiento:", err);
+          }
+        }
+      );
+    };
+
+    // Si NO hay caja → crear una
+    if (!caja) {
+      db.run(
+        `INSERT INTO caja (estado, monto_inicial)
+         VALUES ('ABIERTA', 0)`,
+        function (err) {
+          if (err) {
+            console.error("Error creando caja:", err);
+            return;
+          }
+
+          registrarMovimiento(this.lastID);
+        }
+      );
+    } else {
+      // Si ya hay caja abierta → usarla
+      registrarMovimiento(caja.id);
+    }
+
+  }
+);
+
+            res.json({
+              mensaje: "Venta registrada",
+              descuento,
+              acumuladas: acumuladasAhora,
+              promos_activadas: promosActivadas
+            });
+
+          }
+
+        );
+
+      }
+    );
+
+  });
 
  
 
@@ -352,7 +417,7 @@ app.get("/clientes/buscar/:telefono", (req, res) => {
 // HISTORIAL DE VENTAS POR CLIENTE
 // =====================================================
 
-app.get("/clientes/historial/:telefono", (req, res) => {
+/*app.get("/clientes/historial/:telefono", (req, res) => {
 
   const telefono = req.params.telefono;
 
@@ -380,7 +445,7 @@ app.get("/clientes/historial/:telefono", (req, res) => {
     }
   );
 
-});
+});*/
 
 // =====================================================
 // RESUMEN INTELIGENTE DE CLIENTE

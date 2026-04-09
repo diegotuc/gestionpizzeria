@@ -2,6 +2,7 @@
 <html lang="es">
 
 <head>
+
 <meta charset="UTF-8">
 <title>Dashboard del negocio</title>
 
@@ -21,37 +22,44 @@
 
 <div class="grid">
 
-<div class="card">
-<h3>Ventas del día</h3>
-<p id="ventasDia">0</p>
-</div>
-
-<div class="card">
-<h3>Facturación hoy</h3>
-<p id="totalDia">$0</p>
-</div>
-
-<div class="card">
-<h3>Pizzas vendidas</h3>
-<p id="pizzasDia">0</p>
-</div>
-
-<div class="card">
-<h3>Compras hoy</h3>
-<p id="clientesHoy">0</p>
-</div>
-
-<div class="card">
-<h3>Ticket promedio</h3>
-<p id="ticketPromedio">$0</p>
-</div>
-
-<div class="card">
-<h3>Pizza más vendida</h3>
-<p id="topPizza">-</p>
-</div>
-
-</div>
+    <div class="card">
+    <h3>Ventas del día</h3>
+    <p id="ventasDia">0</p>
+    <span id="trendVentas" class="trend"></span>
+    </div>
+    
+    <div class="card">
+    <h3>Facturación hoy</h3>
+    <p id="totalDia">$0</p>
+    <span id="trendFacturacion" class="trend"></span>
+    </div>
+    
+    <div class="card">
+    <h3>Pizzas vendidas</h3>
+    <p id="pizzasDia">0</p>
+    </div>
+    
+    <div class="card">
+    <h3>Compras hoy</h3>
+    <p id="clientesHoy">0</p>
+    </div>
+    
+    <div class="card">
+    <h3>Ticket promedio</h3>
+    <p id="ticketPromedio">$0</p>
+    </div>
+    
+    <div class="card">
+    <h3>Promedio pizzas / compra</h3>
+    <p id="promedioPizzas">0</p>
+    </div>
+    
+    <div class="card">
+    <h3>Pizza más vendida</h3>
+    <p id="topPizza">-</p>
+    </div>
+    
+    </div>
 
 <!-- ============================= -->
 <!-- GRAFICOS -->
@@ -70,6 +78,20 @@
 </div>
 
 </div>
+
+
+<!-- ============================= -->
+<!-- ACTIVIDAD POR DIA -->
+<!-- ============================= -->
+
+<div class="ranking">
+
+<h2>Actividad por día</h2>
+
+<div id="ventasPorDia"></div>
+
+</div>
+
 
 <!-- ============================= -->
 <!-- TOP PIZZAS -->
