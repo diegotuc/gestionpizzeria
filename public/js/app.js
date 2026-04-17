@@ -305,7 +305,7 @@ cancelarBtn.addEventListener("click", () => {
   clienteNombreInput.value = "";
   clienteTelefonoInput.value = "";
 
-  // reiniciar totales
+ // reiniciar totales
   actualizarTotales();
 
   // mensaje
@@ -313,8 +313,7 @@ cancelarBtn.addEventListener("click", () => {
 
 });
 
-  // =====================================================
-  // =====================================================
+// =====================================================
 // CONFIRMAR VENTA (GUARDA VENTA + DETALLE)
 // =====================================================
 
@@ -329,7 +328,6 @@ confirmarBtn.addEventListener("click", async () => {
   // -------------------------
   // CALCULAR TOTALES
   // -------------------------
-
   for (let sabor in ticket) {
     const item = ticket[sabor];
     total += item.cantidad * item.precio;
@@ -350,7 +348,6 @@ confirmarBtn.addEventListener("click", async () => {
   // -------------------------
   // PREPARAR DETALLE DE PRODUCTOS
   // -------------------------
-
   const productosDetalle = [];
 
   for (let sabor in ticket) {
@@ -362,71 +359,75 @@ confirmarBtn.addEventListener("click", async () => {
   }
 
   // -------------------------
-  // ENVIAR AL BACKEND
+  // VALIDACIONES
   // -------------------------
+  const nombre = clienteNombreInput.value.trim();
+  const telefono = clienteTelefonoInput.value.trim();
+  const metodoPago = document.getElementById("metodoPago").value;
 
+  if (!telefono) {
+    mostrarMensaje("⚠️ Ingresá el teléfono del cliente", "error");
+    return;
+  }
+
+  // -------------------------
+  // OBJETO FINAL A ENVIAR
+  // -------------------------
+  const datosVenta = {
+    nombre,
+    telefono,
+    tipo_cliente: tipoClienteEl.value,
+    productos: productosDetalle,
+    metodo_pago: metodoPago
+  };
+
+  console.log("DATOS QUE ENVIO:", datosVenta);
+
+  // ===============================
+  // FETCH VENTAS (CORRECTO)
+  // ===============================
   try {
 
-    const nombre = clienteNombreInput.value.trim();
-    const telefono = clienteTelefonoInput.value.trim();
-  
-    if (!telefono) {
-      mostrarMensaje("⚠️ Ingresá el teléfono del cliente", "error");
+    const res = await fetch('/ventas', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(datosVenta)
+    });
+
+    const data = await res.json();
+
+    // 🔴 ERROR DEL BACKEND
+    if (data.error) {
+      mostrarMensaje(data.error, "error");
       return;
     }
-    const metodoPago = document.getElementById("metodoPago").value;
-    
-    const response = await fetch("/ventas", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        nombre: nombre,
-        telefono: telefono,
-        tipo_cliente: tipoClienteEl.value,
-        productos: productosDetalle,
-        metodo_pago: metodoPago
-      })
-    });
-  
-    const data = await response.json();
-  
-    mostrarMensaje("✅ Venta guardada correctamente", "exito");
 
-// LIMPIAR TICKET
-for (let key in ticket) delete ticket[key];
+    // 🟢 ÉXITO
+    mostrarMensaje("✅ Venta realizada correctamente", "exito");
 
-// LIMPIAR CAMPOS CLIENTE
-clienteNombreInput.value = "";
-clienteTelefonoInput.value = "";
-
-// REINICIAR TICKET
-renderTicket();
-
-
-
-   // -------------------------
-   // LIMPIAR TICKET Y CLIENTE
-   // -------------------------
-
+    // -------------------------
+    // LIMPIAR DESPUÉS DE VENTA
+    // -------------------------
     for (let key in ticket) delete ticket[key];
+
+    renderTicket();
 
     clienteNombreInput.value = "";
     clienteTelefonoInput.value = "";
 
-    renderTicket();
-  
-  } catch (error) {
-    console.error("Error al guardar venta:", error);
-    mostrarMensaje("❌ Error al guardar venta", "error");
+  } catch (err) {
+    console.error(err);
+    mostrarMensaje("❌ Error en la venta", "error");
   }
 
 });
 
-  // =====================================================
-  // INICIALIZACION
-  // =====================================================
 
-  renderTicket();
-  cargarSabores();
-
+// =====================================================
+// INICIALIZACIÓN (SIEMPRE AL FINAL)
+// =====================================================
+renderTicket();
+cargarSabores();
 });

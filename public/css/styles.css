@@ -174,3 +174,122 @@ input, select {
 .oculto {
   display: none;
 }
+
+/* ===============================
+🔴 BOTÓN CERRAR CAJA
+=============================== */
+
+#btnCerrarCaja {
+  background-color: #e74c3c; /* rojo */
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  margin-top: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+#btnCerrarCaja:hover {
+  background-color: #c0392b; /* rojo más oscuro */
+}
+
+
+/* ===============================
+🟢 PANEL INFO CAJA
+=============================== */
+
+#infoCaja {
+  background-color: #f4f6f7;
+  border: 2px solid #d5dbdb;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Estado */
+#infoCaja h3 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+}
+
+/* Texto */
+#infoCaja p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+/* ===============================
+💡 OPCIONAL: ESTADO VISUAL
+=============================== */
+
+
+
+/* Caja abierta */
+#infoCaja.abierta {
+  border-left: 6px solid #2ecc71; /* verde */
+}
+
+/* Caja cerrada */
+#infoCaja.cerrada {
+  border-left: 6px solid #e74c3c; /* rojo */
+}
+
+/* ===============================
+🟢 BOTÓN ABRIR CAJA
+=============================== */
+
+#btnAbrirCaja {
+  background-color: #2e31cc; /* verde */
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  margin-top: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#btnAbrirCaja:hover {
+  background-color: #27ae60;
+}
+
+/* =============================== */
+/* 🔹 BOTÓN HISTORIAL DE CAJA */
+/* =============================== */
+
+.btn-historial {
+  background-color: #2c3e50; /* azul oscuro */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin-top: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.btn-historial:hover {
+  background-color: #1a252f;
+}
+
+/* =============================== */
+/* 🔹 BOTÓN VOLVER */
+/* =============================== */
+
+.btn-volver {
+  background-color: #7f8c8d; /* gris */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin-top: 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.btn-volver:hover {
+  background-color: #5f6a6a;
+}

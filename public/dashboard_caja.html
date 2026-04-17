@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Historial de Caja</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<header>
+  <h1>📊 Historial de Caja</h1>
+</header>
+
+<!-- =============================== -->
+<!-- 🔹 BUSCAR CAJA -->
+<!-- =============================== -->
+<section class="card">
+  <h2>Buscar Caja</h2>
+
+  <!-- =============================== -->
+<!-- 🔹 SELECTOR DE CAJA -->
+<!-- =============================== -->
+<select id="selectorCaja"></select>
+</section>
+
+<!-- =============================== -->
+<!-- 🔹 INFORMACIÓN DE CAJA -->
+<!-- =============================== -->
+<section class="card">
+  <h2>Información</h2>
+  <div id="infoCajaDetalle"></div>
+</section>
+
+<!-- =============================== -->
+<!-- 🔹 RESUMEN -->
+<!-- =============================== -->
+<section class="card">
+  <h2>Resumen</h2>
+  <div id="resumenCaja"></div>
+</section>
+
+<!-- =============================== -->
+<!-- 🔹 MOVIMIENTOS -->
+<!-- =============================== -->
+<section class="card">
+  <h2>Movimientos</h2>
+  <ul id="listaMovimientos"></ul>
+</section>
+
+<!-- =============================== -->
+<!-- 🔹 VOLVER A VENTAS -->
+<!-- =============================== -->
+<button class="btn-volver" onclick="volverAVentas()">
+    ⬅ Volver a ventas
+  </button>
+
+<script src="/js/dashboard_caja.js"></script>
+
+</body>
+</html>

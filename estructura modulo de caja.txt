@@ -1,0 +1,18 @@
+Arquitectura del proyecto
+
+El sistema está dividido en:
+
+Frontend → HTML + CSS + JS (venta.html, styles.css, caja.js)
+Backend → Node.js + Express (server.js(rutas /caja))
+Base de datos → maneja entidad Caja y movimientos
+
+
+Estoy desarrollando un sistema de gestión de pizzería modular.
+Actualmente tengo implementado el módulo Caja con:
+
+Apertura de caja (POST /caja/abrir)
+Cierre de caja (POST /caja/cerrar)
+Consulta de caja actual (GET /caja/actual)
+Frontend funcional con venta.html, caja.js y styles.css
+
+Quiero continuar el desarrollo sin romper lo existente.
