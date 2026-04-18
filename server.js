@@ -247,71 +247,68 @@ app.get("/caja/listado", (req, res) => {
 // 📊 RESUMEN DE CAJA (HISTORIAL)
 // =====================================================
 
+// =====================================================
+// 📊 RESUMEN DE CAJA
+// =====================================================
 app.get("/caja/resumen/:id", (req, res) => {
 
   const cajaId = req.params.id;
 
-  // ===============================
-  // 🔹 1. OBTENER CAJA
-  // ===============================
+  // Obtener caja
   db.get(`SELECT * FROM caja WHERE id = ?`, [cajaId], (err, caja) => {
 
     if (err) return res.status(500).json({ error: "Error al obtener caja" });
+    if (!caja) return res.status(404).json({ error: "Caja no encontrada" });
 
-    if (!caja) {
-      return res.status(404).json({ error: "Caja no encontrada" });
-    }
+    // Obtener movimientos
+    db.all(
+      `SELECT * FROM movimientos_caja WHERE caja_id = ?`,
+      [cajaId],
+      (err, movimientos) => {
 
-    // ===============================
-    // 🔹 2. OBTENER MOVIMIENTOS
-    // ===============================
-    db.all(`
-      SELECT * FROM movimientos_caja
-      WHERE caja_id = ?
-      ORDER BY id ASC
-    `, [cajaId], (err, movimientos) => {
+        if (err) return res.status(500).json({ error: "Error en movimientos" });
 
-      if (err) return res.status(500).json({ error: "Error en movimientos" });
+        // ===============================
+        // 🔹 TOTALES GENERALES
+        // ===============================
+        let ingresos = 0;
+        let egresos = 0;
 
-      // ===============================
-      // 🔹 3. CALCULAR TOTALES (IMPORTANTE: MAYÚSCULAS)
-      // ===============================
-      let ingresos = 0;
-      let egresos = 0;
-
-      movimientos.forEach(m => {
-        if (m.tipo === 'INGRESO') ingresos += m.monto;
-        if (m.tipo === 'EGRESO') egresos += m.monto;
-      });
-
-      const total = ingresos - egresos;
-
-      // ===============================
-      // 🔹 4. OBTENER VENTAS DESDE MOVIMIENTOS
-      // ===============================
-      const ventasIds = movimientos
-        .filter(m => m.categoria === 'VENTA')
-        .map(m => m.referencia_id);
-
-      if (ventasIds.length === 0) {
-        return res.json({
-          caja,
-          ingresos,
-          egresos,
-          total,
-          movimientos,
-          ventas: []
+        movimientos.forEach(m => {
+          if (m.tipo === 'INGRESO') ingresos += m.monto;
+          if (m.tipo === 'EGRESO') egresos += m.monto;
         });
-      }
 
-      const placeholders = ventasIds.map(() => '?').join(',');
+        const total = ingresos - egresos;
 
-      db.all(`
-        SELECT * FROM ventas
-        WHERE id IN (${placeholders})
-      `, ventasIds, (err, ventas) => {
+        // ===============================
+        // 🔹 TOTALES POR METODO (CORRECTO)
+        // ===============================
+        let metodos = {
+          efectivo: 0,
+          tarjeta: 0,
+          transferencia: 0
+        };
 
-        if (err) return res.status(500).json({ error: "Error en ventas" });
+        movimientos.forEach(m => {
+
+          if (m.tipo === 'INGRESO') {
+
+            if (m.metodo_pago === 'efectivo') {
+              metodos.efectivo += m.monto;
+            }
+
+            if (m.metodo_pago === 'tarjeta') {
+              metodos.tarjeta += m.monto;
+            }
+
+            if (m.metodo_pago === 'transferencia') {
+              metodos.transferencia += m.monto;
+            }
+
+          }
+
+        });
 
         // ===============================
         // 🔹 RESPUESTA FINAL
@@ -321,14 +318,12 @@ app.get("/caja/resumen/:id", (req, res) => {
           ingresos,
           egresos,
           total,
-          movimientos,
-          ventas
+          metodos,
+          movimientos
         });
 
-      });
-
-    });
-
+      }
+    );
   });
 
 });

@@ -293,3 +293,37 @@ input, select {
 .btn-volver:hover {
   background-color: #5f6a6a;
 }
+
+/* =============================== */
+/* 🔹 CIERRE DE CAJA */
+/* =============================== */
+
+.cierre-caja {
+  border: 2px solid #2c3e50;
+  background-color: #f8f9fa;
+}
+
+.cierre-caja h2 {
+  text-align: center;
+}
+
+.cierre-caja p {
+  margin: 5px 0;
+  font-size: 15px;
+}
+
+/* =============================== */
+/* 🔹 BLOQUES CIERRE DE CAJA */
+/* =============================== */
+
+.cierre-caja .bloque {
+  margin-bottom: 10px;
+}
+
+.cierre-caja hr {
+  margin: 10px 0;
+}
+
+.cierre-caja p {
+  margin: 4px 0;
+}
