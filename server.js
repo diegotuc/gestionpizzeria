@@ -1,5 +1,5 @@
 // =====================================================
-// SISTEMA DE GESTION - PIZZERIA
+// SISTEMA DE GESTION - PIZZERIA (VERSIÓN ESTABLE)
 // =====================================================
 
 const express = require("express");
@@ -27,7 +27,7 @@ const db = new sqlite3.Database("./pizzeria.db", (err) => {
 });
 
 // =====================================================
-// TABLAS
+// CREACIÓN DE TABLAS (CORRECTA)
 // =====================================================
 
 db.serialize(() => {
@@ -47,9 +47,13 @@ db.serialize(() => {
     activo INTEGER DEFAULT 1
   )`);
 
+  // 🔥 YA INCLUYE DESCUENTOS (NO HAY ALTER TABLE)
   db.run(`CREATE TABLE IF NOT EXISTS ventas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    total_bruto REAL DEFAULT 0,
+    descuento REAL DEFAULT 0,
+    tipo_descuento TEXT DEFAULT 'NINGUNO',
     total_final REAL
   )`);
 
@@ -83,22 +87,14 @@ db.serialize(() => {
 });
 
 // =====================================================
-// DEBUG (IMPORTANTE)
+// DEBUG
 // =====================================================
 
 app.get("/debug/cerrar-cajas", (req, res) => {
-
   db.run(`UPDATE caja SET estado='CERRADA' WHERE estado='ABIERTA'`, function(err) {
-
-    if (err) {
-      console.error("Error limpiando cajas:", err);
-      return res.status(500).json({ error: "Error limpiando cajas" });
-    }
-
+    if (err) return res.status(500).json({ error: "Error limpiando cajas" });
     res.json({ mensaje: "Todas las cajas fueron cerradas" });
-
   });
-
 });
 
 // =====================================================
@@ -117,8 +113,7 @@ app.get("/productos", (req, res) => {
 // =====================================================
 
 app.get("/clientes/buscar/:telefono", (req, res) => {
-  db.get(
-    `SELECT * FROM clientes WHERE telefono = ?`,
+  db.get(`SELECT * FROM clientes WHERE telefono = ?`,
     [req.params.telefono],
     (err, row) => {
       if (err) return res.status(500).json(err);
@@ -131,32 +126,22 @@ app.get("/clientes/buscar/:telefono", (req, res) => {
 // CAJA
 // =====================================================
 
-// ABRIR
 app.post("/caja/abrir", (req, res) => {
-
-  db.get(`SELECT * FROM caja WHERE estado='ABIERTA' LIMIT 1`, [], (err, caja) => {
-
-    if (caja) {
-      return res.status(400).json({ error: "Ya hay caja abierta" });
-    }
+  db.get(`SELECT * FROM caja WHERE estado='ABIERTA'`, [], (err, caja) => {
+    if (caja) return res.status(400).json({ error: "Ya hay caja abierta" });
 
     db.run(`INSERT INTO caja (estado) VALUES ('ABIERTA')`, function(err){
       if (err) return res.status(500).json(err);
       res.json({ mensaje: "Caja abierta", id: this.lastID });
     });
-
   });
-
 });
 
-// CERRAR
 app.post("/caja/cerrar", (req, res) => {
 
   db.get(`SELECT * FROM caja WHERE estado='ABIERTA'`, [], (err, caja) => {
 
-    if (!caja) {
-      return res.status(400).json({ error: "No hay caja abierta" });
-    }
+    if (!caja) return res.status(400).json({ error: "No hay caja abierta" });
 
     db.get(`
       SELECT 
@@ -166,8 +151,8 @@ app.post("/caja/cerrar", (req, res) => {
       WHERE caja_id = ?
     `, [caja.id], (err, totales) => {
 
-      const ingresos = totales.ingresos || 0;
-      const egresos = totales.egresos || 0;
+      const ingresos = totales?.ingresos || 0;
+      const egresos = totales?.egresos || 0;
       const total = ingresos - egresos;
 
       db.run(`
@@ -177,8 +162,6 @@ app.post("/caja/cerrar", (req, res) => {
       `, [total, caja.id], (err) => {
 
         if (err) return res.status(500).json({ error: "Error al cerrar caja" });
-
-        console.log("✅ Caja cerrada correctamente");
 
         res.json({
           mensaje: "Caja cerrada",
@@ -193,201 +176,205 @@ app.post("/caja/cerrar", (req, res) => {
 
 });
 
-// CAJA ACTUAL
 app.get("/caja/actual", (req, res) => {
 
-  db.get(`SELECT * FROM caja WHERE estado='ABIERTA' LIMIT 1`, [], (err, caja) => {
+  db.get(`SELECT * FROM caja WHERE estado='ABIERTA'`, [], (err, caja) => {
 
-    if (!caja) {
-      return res.json({ caja: null, movimientos: [] });
-    }
+    if (!caja) return res.json({ caja: null, movimientos: [] });
 
-    db.all(
-      `SELECT * FROM movimientos_caja WHERE caja_id = ?`,
+    db.all(`SELECT * FROM movimientos_caja WHERE caja_id = ?`,
       [caja.id],
       (err, movimientos) => {
-
         res.json({ caja, movimientos });
-
       }
     );
 
   });
 
 });
-
-// =====================================================
-// 📋 LISTADO DE CAJAS
-// =====================================================
-
-app.get("/caja/listado", (req, res) => {
-
-  db.all(`
-    SELECT 
-      id,
-      fecha_apertura,
-      fecha_cierre,
-      estado,
-      monto_final
-    FROM caja
-    ORDER BY id DESC
-  `, [], (err, cajas) => {
-
-    if (err) {
-      return res.status(500).json({ error: "Error al obtener cajas" });
-    }
-
-    res.json(cajas);
-
-  });
-
-});
-
-// =====================================================
-// 📊 RESUMEN DE CAJA (HISTORIAL)
-// =====================================================
-
-// =====================================================
-// 📊 RESUMEN DE CAJA
-// =====================================================
-app.get("/caja/resumen/:id", (req, res) => {
-
-  const cajaId = req.params.id;
-
-  // Obtener caja
-  db.get(`SELECT * FROM caja WHERE id = ?`, [cajaId], (err, caja) => {
-
-    if (err) return res.status(500).json({ error: "Error al obtener caja" });
-    if (!caja) return res.status(404).json({ error: "Caja no encontrada" });
-
-    // Obtener movimientos
-    db.all(
-      `SELECT * FROM movimientos_caja WHERE caja_id = ?`,
-      [cajaId],
-      (err, movimientos) => {
-
-        if (err) return res.status(500).json({ error: "Error en movimientos" });
-
-        // ===============================
-        // 🔹 TOTALES GENERALES
-        // ===============================
-        let ingresos = 0;
-        let egresos = 0;
-
-        movimientos.forEach(m => {
-          if (m.tipo === 'INGRESO') ingresos += m.monto;
-          if (m.tipo === 'EGRESO') egresos += m.monto;
-        });
-
-        const total = ingresos - egresos;
-
-        // ===============================
-        // 🔹 TOTALES POR METODO (CORRECTO)
-        // ===============================
-        let metodos = {
-          efectivo: 0,
-          tarjeta: 0,
-          transferencia: 0
-        };
-
-        movimientos.forEach(m => {
-
-          if (m.tipo === 'INGRESO') {
-
-            if (m.metodo_pago === 'efectivo') {
-              metodos.efectivo += m.monto;
-            }
-
-            if (m.metodo_pago === 'tarjeta') {
-              metodos.tarjeta += m.monto;
-            }
-
-            if (m.metodo_pago === 'transferencia') {
-              metodos.transferencia += m.monto;
-            }
-
-          }
-
-        });
-
-        // ===============================
-        // 🔹 RESPUESTA FINAL
-        // ===============================
-        res.json({
-          caja,
-          ingresos,
-          egresos,
-          total,
-          metodos,
-          movimientos
-        });
-
-      }
-    );
-  });
-
-});
-
-
-
 
 // =====================================================
 // VENTAS
 // =====================================================
 
+// LISTAR
+app.get("/ventas", (req, res) => {
+
+  db.all(`
+    SELECT 
+      id,
+      fecha,
+      total_bruto,
+      descuento,
+      total_final,
+      tipo_descuento
+    FROM ventas
+    ORDER BY fecha DESC
+  `, [], (err, rows) => {
+
+    if (err) return res.status(500).json(err);
+    res.json(rows);
+
+  });
+
+});
+
+// FILTRO POR FECHA
+app.get("/ventas-rango", (req, res) => {
+
+  const { desde, hasta } = req.query;
+
+  if (!desde || !hasta) {
+    return res.status(400).json({ error: "Fechas requeridas" });
+  }
+
+  db.all(`
+    SELECT 
+      id,
+      fecha,
+      total_bruto,
+      descuento,
+      total_final,
+      tipo_descuento
+    FROM ventas
+    WHERE DATE(fecha) BETWEEN DATE(?) AND DATE(?)
+    ORDER BY fecha DESC
+  `, [desde, hasta], (err, rows) => {
+
+    if (err) return res.status(500).json(err);
+    res.json(rows);
+
+  });
+
+});
+
+// DETALLE
+app.get("/ventas/:id", (req, res) => {
+  db.all(`SELECT * FROM detalle_venta WHERE venta_id = ?`,
+    [req.params.id],
+    (err, rows) => {
+      if (err) return res.status(500).json(err);
+      res.json(rows);
+    }
+  );
+});
+
+// CREAR VENTA (CON DESCUENTO REAL)
 app.post("/ventas", (req, res) => {
 
-  console.log("➡️ INTENTANDO CREAR VENTA");
-
-  const { telefono, productos, metodo_pago } = req.body;
+  const {
+    telefono,
+    productos,
+    metodo_pago,
+    descuento = 0,
+    tipo_descuento = "NINGUNO"
+  } = req.body;
 
   if (!telefono || !productos || productos.length === 0) {
     return res.status(400).json({ error: "Datos incompletos" });
   }
 
-  db.all(`SELECT * FROM caja WHERE estado='ABIERTA'`, [], (err, cajas) => {
+  db.get(`SELECT * FROM caja WHERE estado='ABIERTA'`, [], (err, caja) => {
 
-    if (!cajas || cajas.length === 0) {
-      return res.status(400).json({ error: "Caja cerrada" });
-    }
+    if (!caja) return res.status(400).json({ error: "Caja cerrada" });
 
-    if (cajas.length > 1) {
-      return res.status(500).json({ error: "Error de integridad en caja" });
-    }
+    let total_bruto = 0;
+    productos.forEach(p => total_bruto += p.precio * p.cantidad);
 
-    const caja = cajas[0];
+    const total_final = total_bruto - descuento;
 
-    let total = 0;
-    productos.forEach(p => total += p.precio * p.cantidad);
+    db.run(`
+      INSERT INTO ventas (total_bruto, descuento, tipo_descuento, total_final)
+      VALUES (?,?,?,?)
+    `,
+    [total_bruto, descuento, tipo_descuento, total_final],
+    function(err){
 
-    db.run(
-      `INSERT INTO ventas (total_final) VALUES (?)`,
-      [total],
-      function(err){
+      if (err) return res.status(500).json({ error: "Error al registrar venta" });
 
-        if (err) return res.status(500).json({ error: "Error al registrar venta" });
+      const ventaId = this.lastID;
 
-        const ventaId = this.lastID;
+      productos.forEach(p => {
+        db.run(`
+          INSERT INTO detalle_venta 
+          (venta_id, nombre_producto, cantidad, precio_unitario)
+          VALUES (?,?,?,?)`,
+          [ventaId, p.nombre, p.cantidad, p.precio]
+        );
+      });
 
-        productos.forEach(p => {
-          db.run(
-            `INSERT INTO detalle_venta 
-            (venta_id, nombre_producto, cantidad, precio_unitario)
-            VALUES (?,?,?,?)`,
-            [ventaId, p.nombre, p.cantidad, p.precio]
-          );
+      db.run(`
+        INSERT INTO movimientos_caja
+        (caja_id, tipo, categoria, monto, metodo_pago, referencia_id)
+        VALUES (?, 'INGRESO', 'VENTA', ?, ?, ?)`,
+        [caja.id, total_final, metodo_pago, ventaId]
+      );
+
+      res.json({ mensaje: "Venta registrada" });
+
+    });
+
+  });
+
+});
+
+// =====================================================
+// ESTADISTICAS
+// =====================================================
+
+app.get("/estadisticas", (req, res) => {
+
+  db.get(`
+    SELECT SUM(total_final) as total_hoy
+    FROM ventas
+    WHERE DATE(fecha) = DATE('now')
+  `, [], (err, hoy) => {
+
+    db.get(`
+      SELECT SUM(total_final) as total_mes
+      FROM ventas
+      WHERE strftime('%Y-%m', fecha) = strftime('%Y-%m', 'now')
+    `, [], (err, mes) => {
+
+      db.get(`
+        SELECT 
+          SUM(cantidad) as total_pizzas,
+          nombre_producto as pizza_top
+        FROM detalle_venta
+        GROUP BY nombre_producto
+        ORDER BY total_pizzas DESC
+        LIMIT 1
+      `, [], (err, top) => {
+
+        res.json({
+          total_hoy: hoy?.total_hoy || 0,
+          total_mes: mes?.total_mes || 0,
+          total_pizzas: top?.total_pizzas || 0,
+          pizza_top: top?.pizza_top || "-"
         });
 
-        db.run(`
-          INSERT INTO movimientos_caja
-          (caja_id, tipo, categoria, monto, metodo_pago, referencia_id)
-          VALUES (?, 'INGRESO', 'VENTA', ?, ?, ?)
-        `, [caja.id, total, metodo_pago, ventaId]);
+      });
 
-        res.json({ mensaje: "Venta registrada" });
+    });
 
-      }
-    );
+  });
+
+});
+
+// GRAFICO
+app.get("/ventas-por-dia", (req, res) => {
+
+  db.all(`
+    SELECT 
+      DATE(fecha) as dia,
+      SUM(total_final) as total
+    FROM ventas
+    GROUP BY dia
+    ORDER BY dia ASC
+  `, [], (err, rows) => {
+
+    if (err) return res.status(500).json(err);
+    res.json(rows);
 
   });
 

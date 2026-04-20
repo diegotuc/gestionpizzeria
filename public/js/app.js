@@ -1,12 +1,8 @@
 // =====================================================
-// MODULO VENTA - PIZZERIA
+// MODULO VENTA - PIZZERIA (FIX TOTAL)
 // =====================================================
 
 document.addEventListener("DOMContentLoaded", () => {
-
-  // =====================================================
-  // VARIABLES PRINCIPALES
-  // =====================================================
 
   const ticket = {};
 
@@ -18,241 +14,159 @@ document.addEventListener("DOMContentLoaded", () => {
   const clienteNombreInput = document.getElementById("clienteNombre");
   const clienteTelefonoInput = document.getElementById("clienteTelefono");
 
-  //const cancelarBtn = document.getElementById("cancelarVenta");
-
   const confirmarBtn = document.querySelector(".confirmar");
   const cancelarBtn = document.querySelector(".cancelar");
-    const mensajeSistema = document.getElementById("mensajeSistema");
-
-  if (!ticketList || !totalEl || !descuentoEl || !tipoClienteEl || !confirmarBtn || !cancelarBtn) {
-    console.error("Algún elemento del HTML no existe.");
-    return;
-  }
+  const mensajeSistema = document.getElementById("mensajeSistema");
 
   // =====================================================
-// BUSCAR CLIENTE POR TELEFONO
-// =====================================================
-
-  clienteTelefonoInput.addEventListener("blur", async () => {
-
-  const telefono = clienteTelefonoInput.value.trim();
-
-  if (!telefono) return;
-
-  try {
-
-    const response = await fetch(`/clientes/buscar/${telefono}`);
-
-    if (!response.ok) return;
-
-    const cliente = await response.json();
-
-    // completar nombre automáticamente
-    clienteNombreInput.value = cliente.nombre;
-
-    mostrarMensaje("Cliente encontrado", "exito");
-
-  } catch (error) {
-
-    // si no existe el cliente no pasa nada
-    console.log("Cliente nuevo");
-
-  }
-
-});
-
-//=====================================
-//RUTA PARA VER HISTORIAL DEL CLIENTE
-//=====================================
-
-/*app.get("/clientes/historial/:telefono", (req, res) => {
-
-  const telefono = req.params.telefono;
-
-  const cliente = clientes.find(c => c.telefono === telefono);
-
-  if (!cliente) {
-    return res.json({ historial: [] });
-  }
-
-  res.json(cliente.historial);
-});*/
-
-
-  // =====================================================
-  // MENSAJES DEL SISTEMA (UX)
+  // MENSAJES
   // =====================================================
 
   function mostrarMensaje(texto, tipo) {
-    if (!mensajeSistema) return;
-
     mensajeSistema.textContent = texto;
     mensajeSistema.className = "mensaje " + tipo;
 
-  setTimeout(() => {
-     mensajeSistema.className = "mensaje oculto";
+    setTimeout(() => {
+      mensajeSistema.className = "mensaje oculto";
     }, 2500);
   }
 
+  // =====================================================
+  // 🔍 BUSCAR CLIENTE POR TELEFONO (FIX)
+  // =====================================================
 
+  clienteTelefonoInput.addEventListener("blur", async () => {
 
-  
+    const telefono = clienteTelefonoInput.value.trim();
+
+    if (!telefono) return;
+
+    try {
+
+      const response = await fetch(`/clientes/buscar/${telefono}`);
+
+      if (!response.ok) {
+        console.error("Ruta no encontrada:", response.status);
+        return;
+      }
+
+      const cliente = await response.json();
+
+      if (cliente) {
+        clienteNombreInput.value = cliente.nombre || "";
+        tipoClienteEl.value = cliente.tipo_cliente || "minorista";
+        mostrarMensaje("Cliente encontrado ✔", "exito");
+      }
+
+    } catch (error) {
+      console.error("Error buscando cliente:", error);
+    }
+
+  });
 
   // =====================================================
-  // CARGAR PRODUCTOS DESDE BACKEND
+  // CARGAR PRODUCTOS
   // =====================================================
 
   async function cargarSabores() {
 
-    try {
-      const response = await fetch("/productos");
-      const productos = await response.json();
+    const response = await fetch("/productos");
+    const productos = await response.json();
 
-      const contenedor = document.getElementById("listaSabores");
-      contenedor.innerHTML = "";
+    const contenedor = document.getElementById("listaSabores");
+    contenedor.innerHTML = "";
 
-      productos.forEach(prod => {
+    productos.forEach(prod => {
 
-        const btn = document.createElement("button");
-        btn.classList.add("sabor-btn");
-        btn.textContent = `${prod.nombre} - $${prod.precio}`;
-        btn.dataset.sabor = prod.nombre;
-        btn.dataset.precio = prod.precio;
+      const btn = document.createElement("button");
+      btn.classList.add("sabor-btn");
+      btn.textContent = `${prod.nombre} - $${prod.precio}`;
 
-        // -------------------------
-        // AGREGAR PRODUCTO AL TICKET
-        // -------------------------
+      btn.addEventListener("click", () => {
 
-        btn.addEventListener("click", () => {
+        if (!ticket[prod.nombre]) {
+          ticket[prod.nombre] = {
+            cantidad: 1,
+            precio: prod.precio
+          };
+        } else {
+          ticket[prod.nombre].cantidad++;
+        }
 
-          if (!ticket[prod.nombre]) {
-            ticket[prod.nombre] = {
-              cantidad: 1,
-              precio: prod.precio
-            };
-          } else {
-            ticket[prod.nombre].cantidad++;
-          }
-
-          renderTicket();
-        });
-
-        contenedor.appendChild(btn);
+        renderTicket();
       });
 
-    } catch (error) {
-      console.error("Error cargando productos:", error);
-    }
+      contenedor.appendChild(btn);
+    });
   }
 
   // =====================================================
-  // RENDERIZAR TICKET (ORDEN ALFABETICO)
+  // CALCULAR TOTALES
+  // =====================================================
+
+  function calcularTotales() {
+
+    let total = 0;
+    let totalPizzas = 0;
+    let precioBase = 0;
+
+    for (let sabor in ticket) {
+      const item = ticket[sabor];
+      total += item.cantidad * item.precio;
+      totalPizzas += item.cantidad;
+      precioBase = item.precio;
+    }
+
+    let descuento = 0;
+    let tipo_descuento = "NINGUNO";
+
+    if (tipoClienteEl.value === "minorista" && totalPizzas >= 5) {
+      descuento = precioBase * 0.25;
+      tipo_descuento = "PROMO_5_PIZZAS";
+    }
+
+    return {
+      total_bruto: total,
+      descuento,
+      total_final: total - descuento,
+      tipo_descuento
+    };
+  }
+
+  // =====================================================
+  // RENDER TICKET (FIX BOTONES)
   // =====================================================
 
   function renderTicket() {
 
     ticketList.innerHTML = "";
 
-    let total = 0;
-    let totalPizzas = 0;
-    let precioDescuento = 0;
+    const totales = calcularTotales();
 
-    // -------------------------
-    // ORDENAR PRODUCTOS ALFABETICAMENTE
-    // -------------------------
-
-    const saboresOrdenados = Object.keys(ticket).sort();
-
-    for (let sabor of saboresOrdenados) {
+    for (let sabor in ticket) {
 
       const item = ticket[sabor];
       const subtotal = item.cantidad * item.precio;
-
-      total += subtotal;
-      totalPizzas += item.cantidad;
-      precioDescuento = item.precio;
 
       const li = document.createElement("li");
       li.classList.add("ticket-item");
 
       li.innerHTML = `
-        <div>
-          <strong>${sabor}</strong><br>
-          Cantidad: ${item.cantidad}
-        </div>
-
-        <div>
-          <button class="restar" data-sabor="${sabor}">➖</button>
-          <button class="sumar" data-sabor="${sabor}">➕</button>
-          <button class="eliminar" data-sabor="${sabor}">❌</button>
-        </div>
-
-        <div>
-          $${subtotal}
-        </div>
+      <div> <strong>${sabor}</strong><br> Cantidad: ${item.cantidad} 
+      </div> 
+      <div> <button class="restar" data-sabor="${sabor}">➖</button> <button class="sumar" data-sabor="${sabor}">➕</button> <button class="eliminar" data-sabor="${sabor}">❌</button> </div> 
+      <div>$${subtotal}</div>
       `;
 
       ticketList.appendChild(li);
     }
 
-    // -------------------------
-    // CALCULO DESCUENTO
-    // -------------------------
-
-    let descuento = 0;
-
-    if (tipoClienteEl.value === "minorista" && totalPizzas >= 5) {
-      descuento = precioDescuento * 0.25;
-    }
-
-    descuentoEl.textContent = `-$${descuento.toFixed(0)}`;
-    totalEl.textContent = `$${(total - descuento).toFixed(0)}`;
-
-    // -------------------------
-    // ACTIVAR / DESACTIVAR BOTONES
-    // -------------------------
-
-    const sinProductos = Object.keys(ticket).length === 0;
-    confirmarBtn.disabled = sinProductos;
-    cancelarBtn.disabled = sinProductos;
+    descuentoEl.textContent = `-$${totales.descuento}`;
+    totalEl.textContent = `$${totales.total_final}`;
   }
-
-
-// =====================================================
-// AUTOCOMPLETAR CLIENTE POR TELEFONO
-// =====================================================
-
-clienteTelefonoInput.addEventListener("blur", async () => {
-
-  const telefono = clienteTelefonoInput.value.trim();
-
-  if (!telefono) return;
-
-  try {
-
-    const response = await fetch(`/clientes/buscar/${telefono}`);
-    const cliente = await response.json();
-
-    if (cliente) {
-
-      clienteNombreInput.value = cliente.nombre || "";
-      tipoClienteEl.value = cliente.tipo_cliente || "minorista";
-
-      mostrarMensaje("Cliente encontrado ✔", "exito");
-
-    }
-
-  } catch (error) {
-
-    console.error("Error buscando cliente:", error);
-
-  }
-
-});
-
 
   // =====================================================
-  // CONTROLES DEL TICKET (SUMAR / RESTAR / ELIMINAR)
+  // 🔥 CONTROL UNICO DE BOTONES (FIX DUPLICADOS)
   // =====================================================
 
   ticketList.addEventListener("click", (e) => {
@@ -260,12 +174,10 @@ clienteTelefonoInput.addEventListener("blur", async () => {
     const sabor = e.target.dataset.sabor;
     if (!sabor) return;
 
-    // SUMAR
     if (e.target.classList.contains("sumar")) {
       ticket[sabor].cantidad++;
     }
 
-    // RESTAR
     if (e.target.classList.contains("restar")) {
       ticket[sabor].cantidad--;
       if (ticket[sabor].cantidad <= 0) {
@@ -273,7 +185,6 @@ clienteTelefonoInput.addEventListener("blur", async () => {
       }
     }
 
-    // ELIMINAR COMPLETO
     if (e.target.classList.contains("eliminar")) {
       delete ticket[sabor];
     }
@@ -282,134 +193,11 @@ clienteTelefonoInput.addEventListener("blur", async () => {
   });
 
   // =====================================================
-  // CANCELAR VENTA CODIGO VIEJO
+  // CANCELAR
   // =====================================================
 
-  //cancelarBtn.addEventListener("click", () => {
-  //  for (let key in ticket) delete ticket[key];
-  //  renderTicket();
-  //});
+  cancelarBtn.addEventListener("click", () => {
 
-  // =====================================================
-// CANCELAR VENTA
-// =====================================================
-
-cancelarBtn.addEventListener("click", () => {
-
-  // limpiar ticket
-  for (let key in ticket) delete ticket[key];
-
-  renderTicket();
-
-  // limpiar cliente
-  clienteNombreInput.value = "";
-  clienteTelefonoInput.value = "";
-
- // reiniciar totales
-  actualizarTotales();
-
-  // mensaje
-  mostrarMensaje("❌ Venta cancelada", "error");
-
-});
-
-// =====================================================
-// CONFIRMAR VENTA (GUARDA VENTA + DETALLE)
-// =====================================================
-
-confirmarBtn.addEventListener("click", async () => {
-
-  if (Object.keys(ticket).length === 0) return;
-
-  let total = 0;
-  let totalPizzas = 0;
-  let precioDescuento = 0;
-
-  // -------------------------
-  // CALCULAR TOTALES
-  // -------------------------
-  for (let sabor in ticket) {
-    const item = ticket[sabor];
-    total += item.cantidad * item.precio;
-    totalPizzas += item.cantidad;
-    precioDescuento = item.precio;
-  }
-
-  let descuento = 0;
-  let tipo_descuento = "ninguno";
-
-  if (tipoClienteEl.value === "minorista" && totalPizzas >= 5) {
-    descuento = precioDescuento * 0.25;
-    tipo_descuento = "tarjeta";
-  }
-
-  const total_final = total - descuento;
-
-  // -------------------------
-  // PREPARAR DETALLE DE PRODUCTOS
-  // -------------------------
-  const productosDetalle = [];
-
-  for (let sabor in ticket) {
-    productosDetalle.push({
-      nombre: sabor,
-      cantidad: ticket[sabor].cantidad,
-      precio: ticket[sabor].precio
-    });
-  }
-
-  // -------------------------
-  // VALIDACIONES
-  // -------------------------
-  const nombre = clienteNombreInput.value.trim();
-  const telefono = clienteTelefonoInput.value.trim();
-  const metodoPago = document.getElementById("metodoPago").value;
-
-  if (!telefono) {
-    mostrarMensaje("⚠️ Ingresá el teléfono del cliente", "error");
-    return;
-  }
-
-  // -------------------------
-  // OBJETO FINAL A ENVIAR
-  // -------------------------
-  const datosVenta = {
-    nombre,
-    telefono,
-    tipo_cliente: tipoClienteEl.value,
-    productos: productosDetalle,
-    metodo_pago: metodoPago
-  };
-
-  console.log("DATOS QUE ENVIO:", datosVenta);
-
-  // ===============================
-  // FETCH VENTAS (CORRECTO)
-  // ===============================
-  try {
-
-    const res = await fetch('/ventas', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(datosVenta)
-    });
-
-    const data = await res.json();
-
-    // 🔴 ERROR DEL BACKEND
-    if (data.error) {
-      mostrarMensaje(data.error, "error");
-      return;
-    }
-
-    // 🟢 ÉXITO
-    mostrarMensaje("✅ Venta realizada correctamente", "exito");
-
-    // -------------------------
-    // LIMPIAR DESPUÉS DE VENTA
-    // -------------------------
     for (let key in ticket) delete ticket[key];
 
     renderTicket();
@@ -417,17 +205,77 @@ confirmarBtn.addEventListener("click", async () => {
     clienteNombreInput.value = "";
     clienteTelefonoInput.value = "";
 
-  } catch (err) {
-    console.error(err);
-    mostrarMensaje("❌ Error en la venta", "error");
-  }
+    mostrarMensaje("Venta cancelada", "error");
+  });
 
-});
+  // =====================================================
+  // CONFIRMAR VENTA
+  // =====================================================
 
+  confirmarBtn.addEventListener("click", async () => {
 
-// =====================================================
-// INICIALIZACIÓN (SIEMPRE AL FINAL)
-// =====================================================
-renderTicket();
-cargarSabores();
+    if (Object.keys(ticket).length === 0) return;
+
+    const totales = calcularTotales();
+
+    const productosDetalle = [];
+
+    for (let sabor in ticket) {
+      productosDetalle.push({
+        nombre: sabor,
+        cantidad: ticket[sabor].cantidad,
+        precio: ticket[sabor].precio
+      });
+    }
+
+    const datosVenta = {
+      nombre: clienteNombreInput.value,
+      telefono: clienteTelefonoInput.value,
+      tipo_cliente: tipoClienteEl.value,
+      productos: productosDetalle,
+      metodo_pago: document.getElementById("metodoPago").value,
+      total_bruto: totales.total_bruto,
+      descuento: totales.descuento,
+      total_final: totales.total_final,
+      tipo_descuento: totales.tipo_descuento
+    };
+
+    try {
+
+      const res = await fetch('/ventas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datosVenta)
+      });
+
+      const data = await res.json();
+
+      if (data.error) {
+        mostrarMensaje(data.error, "error");
+        return;
+      }
+
+      mostrarMensaje("Venta realizada ✔", "exito");
+
+      for (let key in ticket) delete ticket[key];
+
+      renderTicket();
+
+      clienteNombreInput.value = "";
+      clienteTelefonoInput.value = "";
+
+    } catch (err) {
+      console.error(err);
+      mostrarMensaje("Error en la venta", "error");
+    }
+
+  });
+
+  // =====================================================
+  // INIT
+  // =====================================================
+
+  cargarSabores();
+  renderTicket();
+
 });

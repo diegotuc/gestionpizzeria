@@ -5,6 +5,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   const tabla = document.getElementById("tablaVentas");
+  let grafico = null; // 🔥 control de instancia
 
 // =====================================================
 // CARGAR ESTADISTICAS
@@ -50,7 +51,12 @@ async function cargarGrafico() {
 
     const ctx = document.getElementById("graficoVentas").getContext("2d");
 
-    new Chart(ctx, {
+    // 🔥 destruir gráfico previo si existe
+    if (grafico) {
+      grafico.destroy();
+    }
+
+    grafico = new Chart(ctx, {
       type: "bar",
       data: {
         labels: labels,
@@ -78,108 +84,186 @@ async function cargarGrafico() {
 
 }
 
-  // =====================================================
-  // CARGAR VENTAS
-  // =====================================================
+// =====================================================
+// FORMATEAR FECHA (FIX SQLITE)
+// =====================================================
 
-  async function cargarVentas() {
+function formatearFecha(fecha) {
+  return fecha.replace(" ", "T"); // 🔥 fix clave
+}
 
-    try {
+// =====================================================
+// CARGAR VENTAS
+// =====================================================
 
-      const response = await fetch("/ventas");
-      const ventas = await response.json();
+async function cargarVentas() {
 
-      tabla.innerHTML = "";
+  try {
 
-      ventas.forEach(venta => {
+    const response = await fetch("/ventas");
+    const ventas = await response.json();
 
-        const tr = document.createElement("tr");
-        tr.dataset.id = venta.id;
-        tr.classList.add("fila-venta");
+    tabla.innerHTML = "";
 
-        tr.innerHTML = `
-          <td>${venta.id}</td>
-          <td>${new Date(venta.fecha).toLocaleString()}</td>
-          <td>$${venta.total_bruto}</td>
-          <td>$${venta.descuento}</td>
-          <td>$${venta.total_final}</td>
-          <td>${venta.tipo_descuento}</td>
-        `;
-
-        tabla.appendChild(tr);
-
-      });
-
-    } catch (error) {
-      console.error("Error cargando ventas:", error);
-    }
-
-  }
-
-  // =====================================================
-  // CLICK EN VENTA → MOSTRAR DETALLE
-  // =====================================================
-
-  tabla.addEventListener("click", async (e) => {
-
-    const fila = e.target.closest(".fila-venta");
-    if (!fila) return;
-
-    const ventaId = fila.dataset.id;
-
-    // Si ya existe detalle, lo elimina (toggle)
-    const existente = document.querySelector(`.detalle-${ventaId}`);
-    if (existente) {
-      existente.remove();
+    // 🔥 caso sin ventas
+    if (ventas.length === 0) {
+      tabla.innerHTML = `<tr><td colspan="6">Sin ventas registradas</td></tr>`;
       return;
     }
 
-    try {
+    ventas.forEach(venta => {
 
-      const response = await fetch(`/ventas/${ventaId}`);
-      const detalle = await response.json();
+      const tr = document.createElement("tr");
+      tr.dataset.id = venta.id;
+      tr.classList.add("fila-venta");
 
-      const trDetalle = document.createElement("tr");
-      trDetalle.classList.add(`detalle-${ventaId}`);
+      const fecha = new Date(formatearFecha(venta.fecha)).toLocaleString();
 
-      let contenido = `<td colspan="6">`;
+      tr.innerHTML = `
+        <td>${venta.id}</td>
+        <td>${fecha}</td>
+        <td>$${venta.total_bruto}</td>
+        <td>$${venta.descuento}</td>
+        <td>$${venta.total_final}</td>
+        <td>${venta.tipo_descuento}</td>
+      `;
 
-      if (detalle.length === 0) {
-        contenido += "Sin detalle";
-      } else {
+      tabla.appendChild(tr);
 
-        contenido += "<ul>";
+    });
 
-        detalle.forEach(prod => {
-          contenido += `
-            <li>
-              ${prod.nombre_producto} 
-              — ${prod.cantidad} x $${prod.precio_unitario}
-            </li>
-          `;
-        });
+  } catch (error) {
+    console.error("Error cargando ventas:", error);
+  }
 
-        contenido += "</ul>";
-      }
+}
 
-      contenido += `</td>`;
+// =====================================================
+// FILTRAR VENTAS
+// =====================================================
 
-      trDetalle.innerHTML = contenido;
+window.filtrarVentas = async function () {
 
-      fila.insertAdjacentElement("afterend", trDetalle);
+  const desde = document.getElementById("fechaDesde").value;
+  const hasta = document.getElementById("fechaHasta").value;
 
-    } catch (error) {
-      console.error("Error obteniendo detalle:", error);
+  if (!desde || !hasta) {
+    alert("Seleccioná ambas fechas");
+    return;
+  }
+
+  try {
+
+    const response = await fetch(`/ventas-rango?desde=${desde}&hasta=${hasta}`);
+    const ventas = await response.json();
+
+    const tabla = document.getElementById("tablaVentas");
+    tabla.innerHTML = "";
+
+    ventas.forEach(venta => {
+
+      const tr = document.createElement("tr");
+
+      const fecha = new Date(venta.fecha.replace(" ", "T")).toLocaleString();
+
+      tr.innerHTML = `
+  <td>${venta.id}</td>
+  <td>${fecha}</td>
+  <td>$${venta.total_bruto || venta.total_final}</td>
+  <td>$${venta.descuento || 0}</td>
+  <td>$${venta.total_final}</td>
+  <td>${venta.tipo_descuento || "NINGUNO"}</td>`;
+
+      tabla.appendChild(tr);
+
+    });
+
+  } catch (error) {
+    console.error("Error filtrando ventas:", error);
+  }
+
+};
+
+
+// =====================================================
+// VOLVER A TODOS LOS DATOS LUEGO DE FILTRAR
+// =====================================================
+window.resetearFiltro = function () {
+  cargarVentas();
+};
+
+// =====================================================
+// VOLVER A VENTAS.HTML
+// =====================================================
+window.irAVentas = function () {
+  window.location.href = "/venta.html";
+};
+
+// =====================================================
+// CLICK EN VENTA → MOSTRAR DETALLE
+// =====================================================
+
+tabla.addEventListener("click", async (e) => {
+
+  const fila = e.target.closest(".fila-venta");
+  if (!fila) return;
+
+  const ventaId = fila.dataset.id;
+
+  const existente = document.querySelector(`.detalle-${ventaId}`);
+  if (existente) {
+    existente.remove();
+    return;
+  }
+
+  try {
+
+    const response = await fetch(`/ventas/${ventaId}`);
+    const detalle = await response.json();
+
+    const trDetalle = document.createElement("tr");
+    trDetalle.classList.add(`detalle-${ventaId}`);
+
+    let contenido = `<td colspan="6">`;
+
+    if (detalle.length === 0) {
+      contenido += "Sin detalle";
+    } else {
+
+      contenido += "<ul>";
+
+      detalle.forEach(prod => {
+        contenido += `
+          <li>
+            ${prod.nombre_producto} 
+            — ${prod.cantidad} x $${prod.precio_unitario}
+          </li>
+        `;
+      });
+
+      contenido += "</ul>";
     }
 
-  });
+    contenido += `</td>`;
 
-  // =====================================================
-  // INICIALIZACION
-  // =====================================================
+    trDetalle.innerHTML = contenido;
 
-  cargarEstadisticas();
-  cargarGrafico()
-  cargarVentas();
+    fila.insertAdjacentElement("afterend", trDetalle);
+
+  } catch (error) {
+    console.error("Error obteniendo detalle:", error);
+  }
+
+
+
+});
+
+// =====================================================
+// INICIALIZACION
+// =====================================================
+
+cargarEstadisticas();
+cargarGrafico();
+cargarVentas();
 
 });
