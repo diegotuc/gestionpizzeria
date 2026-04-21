@@ -87,6 +87,29 @@ db.serialize(() => {
 });
 
 // =====================================================
+// 🔹 MIGRACIÓN: AGREGAR TELEFONO A VENTAS
+// Solo se ejecuta si la columna no existe
+// =====================================================
+
+db.all(`PRAGMA table_info(ventas)`, [], (err, columns) => {
+
+  if (err) {
+    console.error("Error verificando columnas", err);
+    return;
+  }
+
+  const existe = columns.some(col => col.name === "telefono");
+
+  if (!existe) {
+    db.run(`ALTER TABLE ventas ADD COLUMN telefono TEXT`, (err) => {
+      if (err) console.error("Error agregando columna telefono", err);
+      else console.log("✅ Columna telefono agregada a ventas");
+    });
+  }
+
+});
+
+// =====================================================
 // DEBUG
 // =====================================================
 
@@ -121,6 +144,105 @@ app.get("/clientes/buscar/:telefono", (req, res) => {
     }
   );
 });
+
+// =====================================================
+// 🔹 HISTORIAL DE CLIENTE (VERSIÓN ESTABLE)
+// Compatible con ventas viejas sin teléfono
+// =====================================================
+
+app.get("/clientes/historial/:telefono", (req, res) => {
+
+  const telefono = req.params.telefono;
+
+  if (!telefono) {
+    return res.json([]);
+  }
+
+  db.all(`
+    SELECT 
+      v.id as venta_id,
+      v.fecha,
+      SUM(d.cantidad) as pizzas
+    FROM ventas v
+    JOIN detalle_venta d ON v.id = d.venta_id
+    WHERE v.telefono = ?
+    GROUP BY v.id
+    ORDER BY v.fecha DESC
+  `, [telefono], (err, rows) => {
+
+    if (err) {
+      console.error("❌ Error en historial:", err);
+      return res.json([]);
+    }
+
+    // 🔹 Asegura siempre array válido
+    if (!Array.isArray(rows)) {
+      return res.json([]);
+    }
+
+    res.json(rows);
+
+  });
+
+});
+
+// =====================================================
+// 🔹 RESUMEN DE CLIENTE
+// Calcula métricas clave para análisis de comportamiento
+// =====================================================
+
+app.get("/clientes/resumen/:telefono", (req, res) => {
+
+  const telefono = req.params.telefono;
+
+  if (!telefono) {
+    return res.json({ error: "Teléfono requerido" });
+  }
+
+  db.all(`
+    SELECT 
+      v.fecha,
+      SUM(d.cantidad) as pizzas
+    FROM ventas v
+    JOIN detalle_venta d ON v.id = d.venta_id
+    WHERE v.telefono = ?
+    GROUP BY v.id
+    ORDER BY v.fecha DESC
+  `, [telefono], (err, rows) => {
+
+    if (err) {
+      console.error("Error resumen cliente", err);
+      return res.json({ error: "Error obteniendo resumen" });
+    }
+
+    if (!rows || rows.length === 0) {
+      return res.json({
+        compras: 0,
+        total_pizzas: 0,
+        promedio_pizzas: 0,
+        ultima_compra: "-"
+      });
+    }
+
+    const compras = rows.length;
+
+    const total_pizzas = rows.reduce((acc, v) => acc + v.pizzas, 0);
+
+    const promedio = (total_pizzas / compras).toFixed(2);
+
+    const ultima = new Date(rows[0].fecha).toLocaleDateString();
+
+    res.json({
+      compras,
+      total_pizzas,
+      promedio_pizzas: promedio,
+      ultima_compra: ultima
+    });
+
+  });
+
+});
+
 
 // =====================================================
 // CAJA
@@ -284,10 +406,9 @@ app.post("/ventas", (req, res) => {
     const total_final = total_bruto - descuento;
 
     db.run(`
-      INSERT INTO ventas (total_bruto, descuento, tipo_descuento, total_final)
-      VALUES (?,?,?,?)
-    `,
-    [total_bruto, descuento, tipo_descuento, total_final],
+    INSERT INTO ventas (total_bruto, descuento, tipo_descuento, total_final, telefono)
+    VALUES (?,?,?,?,?)`,
+    [total_bruto, descuento, tipo_descuento, total_final, telefono],
     function(err){
 
       if (err) return res.status(500).json({ error: "Error al registrar venta" });
@@ -310,6 +431,62 @@ app.post("/ventas", (req, res) => {
         [caja.id, total_final, metodo_pago, ventaId]
       );
 
+      // =====================================================
+// 🔹 GESTIÓN AUTOMÁTICA DE CLIENTE
+// Crea o actualiza cliente y acumula pizzas compradas
+// =====================================================
+
+// Calcular total de pizzas de la venta
+let totalPizzas = 0;
+productos.forEach(p => totalPizzas += p.cantidad);
+
+// Buscar cliente por teléfono
+db.get(`SELECT * FROM clientes WHERE telefono = ?`, [telefono], (err, cliente) => {
+
+  if (err) {
+    console.error("Error buscando cliente", err);
+    return;
+  }
+
+  // =====================================================
+  // 🔹 CLIENTE NO EXISTE → CREAR
+  // =====================================================
+  if (!cliente) {
+
+    db.run(`
+      INSERT INTO clientes (nombre, telefono, tipo_cliente, pizzas_acumuladas)
+      VALUES (?, ?, 'REGULAR', ?)
+    `,
+    [
+      "Cliente", // nombre por defecto (luego se puede mejorar)
+      telefono,
+      totalPizzas
+    ],
+    (err) => {
+      if (err) console.error("Error creando cliente", err);
+    });
+
+  } 
+  // =====================================================
+  // 🔹 CLIENTE EXISTE → ACTUALIZAR
+  // =====================================================
+  else {
+
+    const nuevasPizzas = cliente.pizzas_acumuladas + totalPizzas;
+
+    db.run(`
+      UPDATE clientes
+      SET pizzas_acumuladas = ?
+      WHERE telefono = ?
+    `,
+    [nuevasPizzas, telefono],
+    (err) => {
+      if (err) console.error("Error actualizando cliente", err);
+    });
+
+  }
+
+});
       res.json({ mensaje: "Venta registrada" });
 
     });
