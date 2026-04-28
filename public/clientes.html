@@ -4,32 +4,59 @@
 <meta charset="UTF-8">
 <title>Clientes</title>
 
-<!-- ================================
-CSS CLIENTES
-================================ -->
 <link rel="stylesheet" href="/css/styles_clientes.css">
-
 </head>
 
 <body>
 
 <h1>👥 Clientes</h1>
 
+<!-- ============================= -->
+<!-- BUSCAR CLIENTE -->
+<!-- ============================= -->
+
 <div class="card">
 
 <h3>Buscar cliente</h3>
 
 <input type="text" id="telefonoBuscar" placeholder="Teléfono">
-
-<button id="buscarCliente">
-Buscar
-</button>
+<button id="buscarCliente">Buscar</button>
 
 </div>
+
+<!-- ============================= -->
+<!-- LISTADO DE CLIENTES -->
+<!-- ============================= -->
+
+<div class="card">
+
+<h3>📋 Listado de clientes</h3>
+
+<input type="text" id="filtroBusqueda" placeholder="Buscar nombre o teléfono">
+
+<select id="filtroTipo">
+  <option value="">Todos</option>
+  <option value="NUEVO">Nuevo</option>
+  <option value="OCASIONAL">Ocasional</option>
+  <option value="FRECUENTE">Frecuente</option>
+</select>
+
+<button id="btnFiltrar">Filtrar</button>
+
+<div id="listaClientes"></div>
+
+</div>
+
+<!-- ============================= -->
+<!-- INFO CLIENTE -->
+<!-- ============================= -->
 
 <div class="card" id="infoCliente" style="display:none;">
 
 <h3>Datos del cliente</h3>
+
+<strong>Tipo de cliente:</strong>
+<span id="resumenTipo"></span>
 
 <div class="dato">
 <strong>Nombre:</strong>
@@ -46,49 +73,56 @@ Buscar
 <span id="pizzasCliente"></span>
 </div>
 
-<button id="verHistorial">
-Ver historial
-</button>
+<button id="verHistorial">Ver historial</button>
 
 <div class="historial" id="historialVentas"></div>
 
 </div>
 
-<div id="resumenCliente" style="margin-top:10px;font-weight:bold;"></div>
-
-<!-- ====================================== -->
-<!-- RESUMEN INTELIGENTE DEL CLIENTE -->
-<!-- ====================================== -->
+<!-- ============================= -->
+<!-- RESUMEN -->
+<!-- ============================= -->
 
 <div class="card" id="resumenCard" style="display:none;">
 
-    <h3>📊 Resumen del cliente</h3>
-    
-    <div class="dato">
-    <strong>Compras:</strong>
-    <span id="resumenCompras"></span>
-    </div>
-    
-    <div class="dato">
-    <strong>Pizzas compradas:</strong>
-    <span id="resumenPizzas"></span>
-    </div>
-    
-    <div class="dato">
-    <strong>Promedio por compra:</strong>
-    <span id="resumenPromedio"></span>
-    </div>
-    
-    <div class="dato">
-    <strong>Última compra:</strong>
-    <span id="resumenUltima"></span>
-    </div>
-    
-    </div>
+<h3>📊 Resumen del cliente</h3>
 
-<!-- ================================
-JS CLIENTES
-================================ -->
+<div class="dato">
+<strong>Compras:</strong>
+<span id="resumenCompras"></span>
+</div>
+
+<div class="dato">
+<strong>Pizzas compradas:</strong>
+<span id="resumenPizzas"></span>
+</div>
+
+<div class="dato">
+<strong>Promedio por compra:</strong>
+<span id="resumenPromedio"></span>
+</div>
+
+<div class="dato">
+<strong>Última compra:</strong>
+<span id="resumenUltima"></span>
+</div>
+
+</div>
+
+<!-- ============================= -->
+<!-- FIDELIZACIÓN -->
+<!-- ============================= -->
+
+<div class="card" id="fidelizacionCard" style="display:none;">
+
+<h3>🎁 Fidelización</h3>
+
+<div class="dato">
+<span id="mensajeFidelizacion"></span>
+</div>
+
+</div>
+
 <script src="/js/clientes.js"></script>
 
 </body>

@@ -135,14 +135,77 @@ app.get("/productos", (req, res) => {
 // CLIENTES
 // =====================================================
 
-app.get("/clientes/buscar/:telefono", (req, res) => {
-  db.get(`SELECT * FROM clientes WHERE telefono = ?`,
-    [req.params.telefono],
-    (err, row) => {
-      if (err) return res.status(500).json(err);
-      res.json(row || null);
+// =====================================================
+// 🔹 LISTADO DE CLIENTES (MEJORADO)
+// Calcula tipo de cliente dinámicamente según compras
+// =====================================================
+
+// =====================================================
+// 🔹 LISTADO DE CLIENTES (CON FILTRO REAL)
+// =====================================================
+
+app.get("/clientes", (req, res) => {
+
+  const { buscar = "", tipo = "" } = req.query;
+
+  db.all(`
+    SELECT 
+      c.id,
+      c.nombre,
+      c.telefono,
+      c.pizzas_acumuladas,
+      COUNT(v.id) as compras
+    FROM clientes c
+    LEFT JOIN ventas v ON c.telefono = v.telefono
+    WHERE (c.nombre LIKE ? OR c.telefono LIKE ?)
+    GROUP BY c.id
+    ORDER BY c.pizzas_acumuladas DESC
+  `,
+  [`%${buscar}%`, `%${buscar}%`],
+  (err, rows) => {
+
+    if (err) {
+      console.error("Error listando clientes", err);
+      return res.status(500).json({ error: "Error obteniendo clientes" });
     }
-  );
+
+    const clientes = rows.map(c => {
+
+      // ajuste histórico
+      let compras = c.compras;
+      if (compras === 0 && c.pizzas_acumuladas > 0) {
+        compras = 1;
+      }
+
+      // clasificación
+      let tipo_cliente = "NUEVO";
+
+      if (compras >= 2 && compras <= 4) {
+        tipo_cliente = "OCASIONAL";
+      } else if (compras >= 5) {
+        tipo_cliente = "FRECUENTE";
+      }
+
+      return {
+        ...c,
+        compras,
+        tipo_cliente
+      };
+
+    });
+
+    // =====================================================
+    // 🔹 FILTRO POR TIPO (AHORA SÍ FUNCIONA)
+    // =====================================================
+
+    const filtrados = tipo
+      ? clientes.filter(c => c.tipo_cliente === tipo)
+      : clientes;
+
+    res.json(filtrados);
+
+  });
+
 });
 
 // =====================================================
@@ -232,12 +295,100 @@ app.get("/clientes/resumen/:telefono", (req, res) => {
 
     const ultima = new Date(rows[0].fecha).toLocaleDateString();
 
+    
+    // =====================================================
+// 🔹 SISTEMA DE FIDELIZACIÓN
+// Calcula progreso hacia recompensa
+// =====================================================
+
+const clientePizzas = total_pizzas;
+
+const resto = clientePizzas % 10;
+let faltan = 10 - resto;
+
+let mensaje_fidelizacion = "";
+
+if (resto === 0 && clientePizzas > 0) {
+  mensaje_fidelizacion = "🎉 Tenés una pizza gratis disponible";
+} else {
+  mensaje_fidelizacion = `Te faltan ${faltan} pizzas para una gratis 🍕`;
+}
+
+    // =====================================================
+    // 🔹 CLASIFICACIÓN AUTOMÁTICA DE CLIENTE
+    // Determina el tipo según cantidad de compras
+    // =====================================================
+
+    let tipo_cliente = "NUEVO";
+
+    if (compras >= 2 && compras <= 4) {
+      tipo_cliente = "OCASIONAL";
+    } else if (compras >= 5) {
+      tipo_cliente = "FRECUENTE";
+    }
+
     res.json({
       compras,
       total_pizzas,
       promedio_pizzas: promedio,
-      ultima_compra: ultima
+      ultima_compra: ultima,
+      tipo_cliente,
+      faltan_pizzas: faltan,
+  mensaje_fidelizacion
     });
+
+  });
+});
+
+  // =====================================================
+// 🔹 LISTADO DE CLIENTES
+// Devuelve todos los clientes con filtros opcionales
+// NO afecta lógica existente
+// =====================================================
+
+app.get("/clientes", (req, res) => {
+
+  const { buscar = "", tipo = "" } = req.query;
+
+  let query = `
+    SELECT * FROM clientes
+    WHERE 1=1
+  `;
+
+  const params = [];
+
+  // =====================================================
+  // 🔹 FILTRO POR NOMBRE O TELÉFONO
+  // Permite búsqueda parcial
+  // =====================================================
+  if (buscar) {
+    query += ` AND (nombre LIKE ? OR telefono LIKE ?)`;
+    params.push(`%${buscar}%`, `%${buscar}%`);
+  }
+
+  // =====================================================
+  // 🔹 FILTRO POR TIPO DE CLIENTE
+  // NUEVO / OCASIONAL / FRECUENTE
+  // =====================================================
+  if (tipo) {
+    query += ` AND tipo_cliente = ?`;
+    params.push(tipo);
+  }
+
+  // =====================================================
+  // 🔹 ORDEN
+  // Clientes con más pizzas primero (más importantes)
+  // =====================================================
+  query += ` ORDER BY pizzas_acumuladas DESC`;
+
+  db.all(query, params, (err, rows) => {
+
+    if (err) {
+      console.error("Error listando clientes", err);
+      return res.status(500).json({ error: "Error obteniendo clientes" });
+    }
+
+    res.json(rows);
 
   });
 
@@ -440,6 +591,17 @@ app.post("/ventas", (req, res) => {
 let totalPizzas = 0;
 productos.forEach(p => totalPizzas += p.cantidad);
 
+// 🔥 BONUS: si compra 5 o más pizzas → +1 extra
+let bonus = 0;
+if (totalPizzas >= 5) {
+  bonus = 1;
+}
+
+const totalFinalPizzas = totalPizzas + bonus; 
+
+
+
+
 // Buscar cliente por teléfono
 db.get(`SELECT * FROM clientes WHERE telefono = ?`, [telefono], (err, cliente) => {
 
@@ -460,7 +622,7 @@ db.get(`SELECT * FROM clientes WHERE telefono = ?`, [telefono], (err, cliente) =
     [
       "Cliente", // nombre por defecto (luego se puede mejorar)
       telefono,
-      totalPizzas
+      totalFinalPizzas
     ],
     (err) => {
       if (err) console.error("Error creando cliente", err);
@@ -472,7 +634,7 @@ db.get(`SELECT * FROM clientes WHERE telefono = ?`, [telefono], (err, cliente) =
   // =====================================================
   else {
 
-    const nuevasPizzas = cliente.pizzas_acumuladas + totalPizzas;
+    const nuevasPizzas = cliente.pizzas_acumuladas + totalFinalPizzas;
 
     db.run(`
       UPDATE clientes
