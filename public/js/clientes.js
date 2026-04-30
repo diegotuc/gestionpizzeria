@@ -26,6 +26,12 @@ const resumenTipo = document.getElementById("resumenTipo");
 
 // LISTADO
 const listaClientesDiv = document.getElementById("listaClientes");
+
+// RANKINGS
+const topClientesDiv = document.getElementById("topClientes");
+const topClientesDineroDiv = document.getElementById("topClientesDinero");
+
+// FILTROS
 const btnFiltrar = document.getElementById("btnFiltrar");
 const filtroBusqueda = document.getElementById("filtroBusqueda");
 const filtroTipo = document.getElementById("filtroTipo");
@@ -191,3 +197,167 @@ btnFiltrar.addEventListener("click", cargarClientes);
 
 // carga inicial
 cargarClientes();
+
+// =====================================================
+// 🔹 TOP CLIENTES (POR PIZZAS)
+// =====================================================
+
+async function cargarTopClientes(){
+
+const res = await fetch("/clientes/top");
+const data = await res.json();
+
+renderTopClientes(data);
+
+}
+
+function renderTopClientes(clientes){
+
+if(!clientes || clientes.length === 0){
+topClientesDiv.innerHTML = "<p>No hay datos</p>";
+return;
+}
+
+let html = "<h3>🏆 Top Clientes</h3>";
+
+// PODIO
+const podio = clientes.slice(0,3);
+
+html += `<div style="display:flex; gap:10px; margin-bottom:15px;">`;
+
+podio.forEach(c => {
+
+let emoji = "🥉";
+if(c.posicion === 1) emoji = "🥇";
+if(c.posicion === 2) emoji = "🥈";
+
+html += `
+<div style="
+flex:1;
+background:#fff;
+padding:10px;
+border-radius:8px;
+text-align:center;
+box-shadow:0 0 5px rgba(0,0,0,0.1);
+">
+<h2>${emoji}</h2>
+<strong>${c.nombre}</strong><br>
+🍕 ${c.pizzas_acumuladas}
+</div>
+`;
+
+});
+
+html += `</div>`;
+
+// LISTA
+clientes.forEach(c => {
+
+html += `
+<div style="padding:8px; border-bottom:1px solid #eee;">
+#${c.posicion} - ${c.nombre} (${c.telefono}) <br>
+🍕 ${c.pizzas_acumuladas} | 🛒 ${c.compras}
+</div>
+`;
+
+});
+
+topClientesDiv.innerHTML = html;
+
+}
+
+// =====================================================
+// 🔹 TOP CLIENTES POR DINERO
+// =====================================================
+
+async function cargarTopClientesDinero(){
+
+const res = await fetch("/clientes/top-dinero");
+const data = await res.json();
+
+renderTopClientesDinero(data);
+
+}
+
+function renderTopClientesDinero(clientes){
+
+if(!clientes || clientes.length === 0){
+topClientesDineroDiv.innerHTML = "<p>No hay datos</p>";
+return;
+}
+
+let html = "<h3>💰 Clientes que más gastan</h3>";
+
+// PODIO
+const podio = clientes.slice(0,3);
+
+html += `<div style="display:flex; gap:10px; margin-bottom:15px;">`;
+
+podio.forEach(c => {
+
+let emoji = "🥉";
+if(c.posicion === 1) emoji = "🥇";
+if(c.posicion === 2) emoji = "🥈";
+
+html += `
+<div style="
+flex:1;
+background:#fff;
+padding:10px;
+border-radius:8px;
+text-align:center;
+box-shadow:0 0 5px rgba(0,0,0,0.1);
+">
+<h2>${emoji}</h2>
+<strong>${c.nombre}</strong><br>
+💰 $${c.total_gastado.toFixed(0)}
+</div>
+`;
+
+});
+
+html += `</div>`;
+
+// LISTA
+clientes.forEach(c => {
+
+html += `
+<div style="padding:8px; border-bottom:1px solid #eee;">
+#${c.posicion} - ${c.nombre} (${c.telefono}) <br>
+💰 $${c.total_gastado.toFixed(0)} | 🛒 ${c.compras}
+</div>
+`;
+
+});
+
+topClientesDineroDiv.innerHTML = html;
+
+}
+
+// =====================================================
+// 🔹 SISTEMA DE TABS (CORREGIDO)
+// =====================================================
+
+function mostrarTab(e, tabId){
+
+// ocultar
+document.getElementById("clientesTab").style.display = "none";
+document.getElementById("rankingTab").style.display = "none";
+
+// mostrar
+document.getElementById(tabId).style.display = "block";
+
+// botones
+const botones = document.querySelectorAll(".tab-btn");
+botones.forEach(btn => btn.classList.remove("active"));
+
+e.target.classList.add("active");
+
+}
+
+// =====================================================
+// 🔹 CARGA INICIAL RANKINGS
+// =====================================================
+
+cargarTopClientes();
+cargarTopClientesDinero();

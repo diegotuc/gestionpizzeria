@@ -12,114 +12,108 @@
 <h1>👥 Clientes</h1>
 
 <!-- ============================= -->
-<!-- BUSCAR CLIENTE -->
+<!-- TABS -->
 <!-- ============================= -->
 
-<div class="card">
-
-<h3>Buscar cliente</h3>
-
-<input type="text" id="telefonoBuscar" placeholder="Teléfono">
-<button id="buscarCliente">Buscar</button>
-
+<div style="margin-bottom:20px;">
+  <button class="tab-btn active" onclick="mostrarTab(event, 'clientesTab')">Clientes</button>
+  <button class="tab-btn" onclick="mostrarTab(event, 'rankingTab')">Rankings</button>
 </div>
 
 <!-- ============================= -->
-<!-- LISTADO DE CLIENTES -->
+<!-- TAB CLIENTES -->
 <!-- ============================= -->
 
-<div class="card">
+<div id="clientesTab">
 
-<h3>📋 Listado de clientes</h3>
+  <!-- BUSCAR -->
+  <div class="card">
+    <h3>Buscar cliente</h3>
 
-<input type="text" id="filtroBusqueda" placeholder="Buscar nombre o teléfono">
+    <input type="text" id="telefonoBuscar" placeholder="Teléfono">
+    <button id="buscarCliente">Buscar</button>
+  </div>
 
-<select id="filtroTipo">
-  <option value="">Todos</option>
-  <option value="NUEVO">Nuevo</option>
-  <option value="OCASIONAL">Ocasional</option>
-  <option value="FRECUENTE">Frecuente</option>
-</select>
+  <!-- LISTADO -->
+  <div class="card">
 
-<button id="btnFiltrar">Filtrar</button>
+    <h3>📋 Listado de clientes</h3>
 
-<div id="listaClientes"></div>
+    <input type="text" id="filtroBusqueda" placeholder="Buscar nombre o teléfono">
 
-</div>
+    <select id="filtroTipo">
+      <option value="">Todos</option>
+      <option value="NUEVO">Nuevo</option>
+      <option value="OCASIONAL">Ocasional</option>
+      <option value="FRECUENTE">Frecuente</option>
+    </select>
 
-<!-- ============================= -->
-<!-- INFO CLIENTE -->
-<!-- ============================= -->
+    <button id="btnFiltrar">Filtrar</button>
 
-<div class="card" id="infoCliente" style="display:none;">
+    <div id="listaClientes"></div>
 
-<h3>Datos del cliente</h3>
+  </div>
 
-<strong>Tipo de cliente:</strong>
-<span id="resumenTipo"></span>
+  <!-- INFO -->
+  <div class="card" id="infoCliente" style="display:none;">
 
-<div class="dato">
-<strong>Nombre:</strong>
-<span id="nombreCliente"></span>
-</div>
+    <h3>Datos del cliente</h3>
 
-<div class="dato">
-<strong>Teléfono:</strong>
-<span id="telefonoCliente"></span>
-</div>
+    <strong>Tipo de cliente:</strong>
+    <span id="resumenTipo"></span>
 
-<div class="dato">
-<strong>Pizzas acumuladas:</strong>
-<span id="pizzasCliente"></span>
-</div>
+    <div class="dato">
+      <strong>Nombre:</strong>
+      <span id="nombreCliente"></span>
+    </div>
 
-<button id="verHistorial">Ver historial</button>
+    <div class="dato">
+      <strong>Teléfono:</strong>
+      <span id="telefonoCliente"></span>
+    </div>
 
-<div class="historial" id="historialVentas"></div>
+    <div class="dato">
+      <strong>Pizzas acumuladas:</strong>
+      <span id="pizzasCliente"></span>
+    </div>
 
-</div>
+    <button id="verHistorial">Ver historial</button>
 
-<!-- ============================= -->
-<!-- RESUMEN -->
-<!-- ============================= -->
+    <div class="historial" id="historialVentas"></div>
 
-<div class="card" id="resumenCard" style="display:none;">
+  </div>
 
-<h3>📊 Resumen del cliente</h3>
+  <!-- RESUMEN -->
+  <div class="card" id="resumenCard" style="display:none;">
+    <h3>📊 Resumen del cliente</h3>
 
-<div class="dato">
-<strong>Compras:</strong>
-<span id="resumenCompras"></span>
-</div>
+    <div class="dato"><strong>Compras:</strong> <span id="resumenCompras"></span></div>
+    <div class="dato"><strong>Pizzas:</strong> <span id="resumenPizzas"></span></div>
+    <div class="dato"><strong>Promedio:</strong> <span id="resumenPromedio"></span></div>
+    <div class="dato"><strong>Última compra:</strong> <span id="resumenUltima"></span></div>
+  </div>
 
-<div class="dato">
-<strong>Pizzas compradas:</strong>
-<span id="resumenPizzas"></span>
-</div>
-
-<div class="dato">
-<strong>Promedio por compra:</strong>
-<span id="resumenPromedio"></span>
-</div>
-
-<div class="dato">
-<strong>Última compra:</strong>
-<span id="resumenUltima"></span>
-</div>
+  <!-- FIDELIZACIÓN -->
+  <div class="card" id="fidelizacionCard" style="display:none;">
+    <h3>🎁 Fidelización</h3>
+    <span id="mensajeFidelizacion"></span>
+  </div>
 
 </div>
 
 <!-- ============================= -->
-<!-- FIDELIZACIÓN -->
+<!-- TAB RANKINGS -->
 <!-- ============================= -->
 
-<div class="card" id="fidelizacionCard" style="display:none;">
+<div id="rankingTab" style="display:none;">
 
-<h3>🎁 Fidelización</h3>
+  <div class="card">
+    <div id="topClientes"></div>
+  </div>
 
-<div class="dato">
-<span id="mensajeFidelizacion"></span>
-</div>
+  <div class="card">
+    <div id="topClientesDinero"></div>
+  </div>
 
 </div>
 
