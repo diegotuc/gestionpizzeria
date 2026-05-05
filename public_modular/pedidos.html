@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Pedidos</title>
+</head>
+<body>
+
+<h1>🧾 Pedidos</h1>
+
+<input type="text" id="cliente" placeholder="Cliente">
+<input type="number" id="total" placeholder="Total">
+
+<button onclick="guardar()">Guardar venta</button>
+
+<br><br>
+<button onclick="volver()">← Volver</button>
+
+<script>
+async function guardar(){
+
+    const venta = {
+        cliente: document.getElementById('cliente').value,
+        total: parseFloat(document.getElementById('total').value)
+    };
+
+    try {
+        const res = await fetch('/api/ventas', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(venta)
+        });
+
+        const data = await res.json();
+
+        if(!res.ok) throw new Error(data.error);
+
+        alert("Venta guardada ✅");
+
+    } catch(e){
+        alert("Error ❌");
+        console.error(e);
+    }
+}
+
+function volver(){
+    window.location.href = "dashboard.html";
+}
+</script>
+
+</body>
+</html>

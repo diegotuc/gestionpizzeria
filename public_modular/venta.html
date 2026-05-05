@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ventas - Pizzería</title>
+
+    <!-- CSS del módulo -->
+    <link rel="stylesheet" href="/css/venta.css">
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- ===== HEADER ===== -->
+        <header>
+            <h1>🍕 Sistema de Ventas</h1>
+        </header>
+
+        <!-- ===== SECCIÓN PRODUCTOS ===== -->
+        <section class="productos">
+            <h2>Productos</h2>
+
+            <!-- Lista dinámica -->
+            <div id="lista-productos"></div>
+        </section>
+
+        <!-- ===== SECCIÓN CARRITO ===== -->
+        <section class="carrito">
+            <h2>Carrito</h2>
+
+            <ul id="carrito-lista"></ul>
+
+            <div class="total">
+                Total: $<span id="total">0</span>
+            </div>
+
+            <button id="btn-confirmar">Confirmar Venta</button>
+        </section>
+
+    </div>
+
+    <!-- JS del módulo -->
+    <script src="/js/venta.js"></script>
+</body>
+</html>
