@@ -3,30 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <title>Caja</title>
-  <link rel="stylesheet" href="caja.css">
+  <link rel="stylesheet" href="css/caja.css">
 </head>
 <body>
 
-  <h1>💰 Caja</h1>
+  <div class="container">
+    <h1>💰 Caja</h1>
 
-  <div id="resumen">
-    <h2>Total en caja: $<span id="total">0</span></h2>
+    <div class="venta-info">
+      <label>ID Venta:</label>
+      <input type="number" id="ventaId" placeholder="Ej: 1">
+      
+      <label>Total:</label>
+      <input type="number" id="totalVenta" placeholder="Ej: 500">
+    </div>
+
+    <div class="pago">
+      <label>Dinero recibido:</label>
+      <input type="number" id="montoRecibido">
+
+      <label>Vuelto:</label>
+      <input type="text" id="vuelto" readonly>
+    </div>
+
+    <button id="btnCobrar">Cobrar</button>
+
+    <p id="mensaje"></p>
   </div>
 
-  <table border="1" width="100%" id="tablaCaja">
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Tipo</th>
-        <th>Descripción</th>
-        <th>Monto</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- datos dinámicos -->
-    </tbody>
-  </table>
-
-  <script type="module" src="./core/app.js"></script>
+  <script src="js/caja.js"></script>
 </body>
 </html>

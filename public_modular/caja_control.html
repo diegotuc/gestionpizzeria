@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Control de Caja</title>
+      <link rel="stylesheet" href="css/caja_control.css">
+
+</head>
+<body>
+
+<h1>Control de Caja</h1>
+
+<h2>Apertura</h2>
+<input type="number" id="montoApertura">
+<button onclick="abrirCaja()">Abrir Caja</button>
+
+<h2>Resumen</h2>
+<button onclick="verResumen()">Ver Resumen</button>
+
+<p>Apertura: <span id="resApertura">0</span></p>
+<p>Ingresos: <span id="resIngresos">0</span></p>
+<p>Esperado: <span id="resEsperado">0</span></p>
+<p>Diferencia: <span id="resDiferencia">0</span></p>
+
+<h2>Cierre</h2>
+<input type="number" id="montoCierre">
+<button onclick="cerrarCaja()">Cerrar Caja</button>
+
+<script src="modulos/caja/caja_control.js"></script>
+</body>
+</html>

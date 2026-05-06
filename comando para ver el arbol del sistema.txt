@@ -1,0 +1,12 @@
+comando para hacer en terminal
+hay que ir al directorio donde se quiera ver la estructura como árbol y
+si es de sistema y
+Si no querés que aparezcan carpetas pesadas como node_modules, podés hacer:
+
+tree -I "node_modules"
+
+si no es un sistema de programacion podes hacer:
+
+tree
+
+y aparecen las carpetas y archivos que tengas

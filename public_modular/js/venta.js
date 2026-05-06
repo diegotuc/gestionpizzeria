@@ -8,7 +8,7 @@ let carrito = [];
 // ===============================
 // CARGAR PRODUCTOS DESDE BACKEND
 // ===============================
-
+/*🔴 DESACTIVADO TEMPORALMENTE (no existe /api/productos)
 async function cargarProductos() {
     try {
         const res = await fetch('/api/productos'); // endpoint existente
@@ -35,6 +35,36 @@ async function cargarProductos() {
     } catch (error) {
         console.error('Error cargando productos:', error);
     }
+}*/
+
+// ===============================
+// MOCK DE PRODUCTOS (TEMPORAL)
+// ===============================
+function cargarProductosMock() {
+
+    const productos = [
+        { id: 1, nombre: "Pizza Muzza", precio: 1000 },
+        { id: 2, nombre: "Pizza Especial", precio: 1500 },
+        { id: 3, nombre: "Bebida", precio: 500 }
+    ];
+
+    const contenedor = document.getElementById('lista-productos');
+    contenedor.innerHTML = '';
+
+    productos.forEach(prod => {
+
+        const div = document.createElement('div');
+        div.classList.add('producto');
+
+        div.innerHTML = `
+            <span>${prod.nombre} - $${prod.precio}</span>
+            <button onclick="agregarAlCarrito(${prod.id}, '${prod.nombre}', ${prod.precio})">
+                Agregar
+            </button>
+        `;
+
+        contenedor.appendChild(div);
+    });
 }
 
 // ===============================
@@ -70,7 +100,11 @@ function renderCarrito() {
         total += item.precio * item.cantidad;
 
         const li = document.createElement('li');
-        li.textContent = `${item.nombre} x${item.cantidad}`;
+        // Creamos contenido con botón eliminar
+li.innerHTML = `
+    ${item.nombre} x${item.cantidad}
+    <button onclick="eliminarItem(${item.id})">❌</button>
+`;
 
         lista.appendChild(li);
     });
@@ -79,35 +113,86 @@ function renderCarrito() {
 }
 
 // ===============================
+// ELIMINAR ITEM DEL CARRITO
+// ===============================
+function eliminarItem(id) {
+
+    // Filtramos el carrito sacando el producto
+    carrito = carrito.filter(item => item.id !== id);
+
+    // Volvemos a renderizar
+    renderCarrito();
+}
+
+// ===============================
 // CONFIRMAR VENTA
+// ===============================
+
+// ===============================
+// CONFIRMAR VENTA (VERSIÓN CORRECTA PARA BACKEND)
 // ===============================
 
 document.getElementById('btn-confirmar').addEventListener('click', async () => {
 
+    // Validación básica
     if (carrito.length === 0) {
         alert('El carrito está vacío');
         return;
     }
 
+    // ===============================
+    // TRANSFORMAR DATOS AL FORMATO DEL BACKEND
+    // ===============================
+    const data = {
+        total: 0,
+        detalle: []
+    };
+
+    carrito.forEach(item => {
+
+        // Sumamos al total
+        data.total += item.precio * item.cantidad;
+
+        // Armamos detalle como espera SQLite/backend
+        data.detalle.push({
+            producto_id: item.id,
+            cantidad: item.cantidad,
+            precio: item.precio
+        });
+    });
+
     try {
+        // ===============================
+        // ENVÍO AL BACKEND
+        // ===============================
         const res = await fetch('/api/ventas', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ items: carrito })
+            body: JSON.stringify(data) // 👈 ahora correcto
         });
 
-        const data = await res.json();
+        if (!res.ok) {
+            throw new Error('Error en la respuesta del servidor');
+        }
 
-        alert('Venta registrada correctamente');
+        const result = await res.json();
 
-        // Limpiar carrito
+        // ===============================
+        // FEEDBACK AL USUARIO
+        // ===============================
+        alert('✅ Venta registrada correctamente');
+
+        // ===============================
+        // RESET DEL CARRITO
+        // ===============================
         carrito = [];
         renderCarrito();
 
     } catch (error) {
         console.error('Error al confirmar venta:', error);
+        alert('❌ Error al registrar la venta');
     }
 });
 
@@ -115,4 +200,6 @@ document.getElementById('btn-confirmar').addEventListener('click', async () => {
 // INIT
 // ===============================
 
-cargarProductos();
+//cargarProductos();
+// Usamos mock porque backend de productos no está listo
+cargarProductosMock();

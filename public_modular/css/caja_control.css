@@ -1,0 +1,104 @@
+/* =========================
+   ESTILO GENERAL
+========================= */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f6f8;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+h2 {
+  color: #444;
+  margin-top: 30px;
+}
+
+/* =========================
+   CONTENEDOR
+========================= */
+.container {
+  max-width: 500px;
+  margin: auto;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* =========================
+   INPUTS
+========================= */
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+/* =========================
+   BOTONES
+========================= */
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* Apertura */
+button:nth-of-type(1) {
+  background-color: #28a745;
+  color: white;
+}
+
+/* Resumen */
+button:nth-of-type(2) {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Cierre */
+button:nth-of-type(3) {
+  background-color: #dc3545;
+  color: white;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* =========================
+   RESUMEN
+========================= */
+.resumen {
+  background: #f1f3f5;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.resumen p {
+  margin: 5px 0;
+  font-size: 16px;
+}
+
+/* =========================
+   SEPARADORES
+========================= */
+hr {
+  margin: 20px 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}

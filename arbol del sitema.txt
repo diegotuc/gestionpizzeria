@@ -1,0 +1,40 @@
+── modulos
+│   └── cajaControl
+│       └── cajaControl.routes.js
+├── package.json
+├── package-lock.json
+├── pizzeria_modular.db
+├── prompt para final de chat y pasar a otro.txt
+├── public_modular
+│   ├── caja_control.html
+│   ├── caja.html
+│   ├── core
+│   │   └── app.js
+│   ├── css
+│   │   ├── caja_control.css
+│   │   ├── caja.css
+│   │   └── venta.css
+│   ├── dashboard
+│   ├── dashboard.css
+│   ├── dashboard.html
+│   ├── dashboard.js
+│   ├── db.js
+│   ├── index.html
+│   ├── js
+│   │   ├── caja.js
+│   │   └── venta.js
+│   ├── modulos
+│   │   ├── caja
+│   │   │   └── caja_control.js
+│   │   ├── pedidos
+│   │   └── ventas
+│   │       ├── ventas.controller.js
+│   │       ├── ventas.model.js
+│   │       └── ventas.routes.js
+│   ├── pedidos.css
+│   ├── pedidos.html
+│   ├── pedidos.js
+│   └── venta.html
+├── server_modular.js
+├── verificar.js
+

@@ -1,45 +1,50 @@
 const express = require('express');
 const path = require('path');
+const sqlite3 = require('sqlite3').verbose();
 
 const app = express();
 const PORT = 3000;
 
 // =====================
-// MIDDLEWARES
+// DB
+// =====================
+const db = new sqlite3.Database('./pizzeria_modular.db', (err) => {
+    if (err) {
+        console.error("❌ Error SQLite:", err.message);
+    } else {
+        console.log("📦 SQLite conectado");
+    }
+});
+
+app.locals.db = db;
+
+// =====================
+// MIDDLEWARE
 // =====================
 app.use(express.json());
-
-// Archivos estáticos (frontend)
 app.use(express.static(path.join(__dirname, 'public_modular')));
 
 // =====================
-// ROUTES (MODULOS)
+// ROUTES
 // =====================
 
-// Ventas
+// Ventas (no tocar)
 const ventasRoutes = require('./public_modular/modulos/ventas/ventas.routes');
 app.use('/api/ventas', ventasRoutes);
 
+// Caja
+const cajaControlRoutes = require('./modulos/cajaControl/cajaControl.routes');
+app.use('/api/caja', cajaControlRoutes);
+
 // =====================
-// RUTA TEST
+// TEST
 // =====================
 app.get('/api/test', (req, res) => {
-    res.json({ ok: true, msg: 'Servidor funcionando correctamente' });
+    res.json({ ok: true });
 });
 
 // =====================
-// MANEJO DE ERRORES
-// =====================
-app.use((err, req, res, next) => {
-    console.error("Error global:", err);
-    res.status(500).json({
-        ok: false,
-        error: "Error interno del servidor"
-    });
-});
-
-// =====================
-// INICIAR SERVIDOR
+// START
 // =====================
 app.listen(PORT, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
