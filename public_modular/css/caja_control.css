@@ -1,104 +1,305 @@
 /* =========================
    ESTILO GENERAL
 ========================= */
+
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f6f8;
-  margin: 0;
-  padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f8;
+    margin: 0;
+    padding: 20px;
 }
 
 h1 {
-  text-align: center;
-  color: #333;
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
 }
 
 h2 {
-  color: #444;
-  margin-top: 30px;
+    color: #444;
 }
 
 /* =========================
    CONTENEDOR
 ========================= */
+
 .container {
-  max-width: 500px;
-  margin: auto;
-  background: #ffffff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    max-width: 1100px;
+    margin: auto;
+}
+
+/* =========================
+   CARDS
+========================= */
+
+.card-box {
+    background: #ffffff;
+
+    padding: 20px;
+    margin-bottom: 20px;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 4px 10px rgba(0,0,0,0.1);
 }
 
 /* =========================
    INPUTS
 ========================= */
+
 input {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 16px;
+    width: 100%;
+
+    padding: 10px;
+
+    margin-top: 10px;
+    margin-bottom: 10px;
+
+    border-radius: 5px;
+    border: 1px solid #ccc;
+
+    font-size: 16px;
+
+    box-sizing: border-box;
 }
 
 /* =========================
    BOTONES
 ========================= */
+
 button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: 0.2s;
+    width: 100%;
+
+    padding: 10px;
+
+    border: none;
+    border-radius: 5px;
+
+    font-size: 16px;
+
+    cursor: pointer;
+
+    transition: 0.2s;
 }
 
-/* Apertura */
-button:nth-of-type(1) {
-  background-color: #28a745;
-  color: white;
+/* APERTURA */
+
+.card-box button {
+    background-color: #28a745;
+    color: white;
 }
 
-/* Resumen */
-button:nth-of-type(2) {
-  background-color: #007bff;
-  color: white;
-}
+/* CIERRE */
 
-/* Cierre */
-button:nth-of-type(3) {
-  background-color: #dc3545;
-  color: white;
+.btn-cierre {
+    background-color: #dc3545 !important;
 }
 
 button:hover {
-  opacity: 0.9;
+    opacity: 0.9;
+}
+
+/* =========================
+   TABS
+========================= */
+
+.tabs {
+    display: flex;
+    gap: 10px;
+
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    width: auto;
+
+    padding: 12px 20px;
+
+    background: #ddd;
+    color: #333;
+
+    font-weight: bold;
+}
+
+.tab-btn.active {
+    background: #007bff;
+    color: white;
+}
+
+/* =========================
+   TAB CONTENT
+========================= */
+
+.tab-content {
+    display: none;
+
+    background: white;
+
+    padding: 20px;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 4px 10px rgba(0,0,0,0.1);
+}
+
+.tab-content.active {
+    display: block;
 }
 
 /* =========================
    RESUMEN
 ========================= */
-.resumen {
-  background: #f1f3f5;
-  padding: 15px;
-  border-radius: 8px;
-  margin-top: 10px;
+
+.resumen-grid {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
 }
 
-.resumen p {
-  margin: 5px 0;
-  font-size: 16px;
+.resumen-card {
+    flex: 1;
+
+    min-width: 180px;
+
+    background: #f1f3f5;
+
+    padding: 15px;
+
+    border-radius: 8px;
+
+    text-align: center;
+}
+
+.resumen-card h3 {
+    margin-top: 0;
+}
+
+.resumen-card p {
+    font-size: 22px;
+    font-weight: bold;
 }
 
 /* =========================
-   SEPARADORES
+   HISTORIAL
 ========================= */
-hr {
-  margin: 20px 0;
-  border: none;
-  border-top: 1px solid #ddd;
+
+.tabla-historial {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.tabla-historial th,
+.tabla-historial td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+}
+
+.tabla-historial th {
+    background-color: #f4f4f4;
+}
+
+/* =========================
+   REPORTE
+========================= */
+
+.reporte-diario {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.card-reporte {
+    flex: 1;
+
+    min-width: 180px;
+
+    background: #f1f3f5;
+
+    padding: 15px;
+
+    border-radius: 8px;
+
+    text-align: center;
+}
+
+.card-reporte h3 {
+    margin-top: 0;
+}
+
+.card-reporte p {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+/* =========================
+   DIFERENCIA
+========================= */
+
+.positivo {
+    color: green;
+}
+
+.negativo {
+    color: red;
+}
+
+/* =========================
+   TOAST NOTIFICATIONS
+========================= */
+
+#toast-container {
+    position: fixed;
+
+    top: 20px;
+    right: 20px;
+
+    z-index: 9999;
+}
+
+.toast {
+    min-width: 250px;
+
+    margin-bottom: 10px;
+
+    padding: 12px 16px;
+
+    border-radius: 6px;
+
+    color: white;
+    font-weight: bold;
+
+    box-shadow:
+        0 4px 10px rgba(0,0,0,0.2);
+
+    animation: fadeIn 0.3s ease;
+}
+
+.toast.success {
+    background-color: #28a745;
+}
+
+.toast.error {
+    background-color: #dc3545;
+}
+
+.toast.info {
+    background-color: #007bff;
+}
+
+@keyframes fadeIn {
+
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

@@ -1,8 +1,12 @@
 const express = require('express');
+
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 
 const app = express();
+
+app.use(express.json());
+
 const PORT = 3000;
 
 // =====================
@@ -23,7 +27,6 @@ app.locals.db = db;
 // =====================
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public_modular')));
-
 // =====================
 // ROUTES
 // =====================
