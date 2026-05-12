@@ -24,12 +24,54 @@ const API = "/api/caja";
 
 
 // ===============================
+// 🟡 ESTADO CAJA
+// ===============================
+function cargarEstadoCaja() {
+
+    fetch(`${API}/estado`)
+        .then(r => r.json())
+        .then(data => {
+
+            const estadoEl =
+                document.getElementById('estadoCaja');
+
+            // Evitar errores si no existe
+            if (!estadoEl) return;
+
+            estadoEl.innerText =
+                data.estado || 'DESCONOCIDO';
+
+            estadoEl.classList.remove(
+                'positivo',
+                'negativo'
+            );
+
+            estadoEl.classList.add(
+                data.estado === 'ABIERTA'
+                    ? 'positivo'
+                    : 'negativo'
+            );
+        })
+        .catch(err => {
+            console.error(
+                'Error estado caja:',
+                err
+            );
+        });
+}
+
+
+// ===============================
 // 🔄 AUTO REFRESH (POS REAL)
 // ===============================
 setInterval(() => {
 
+    cargarEstadoCaja();
+
     verResumen();
+
     cargarHistorialCaja();
+
     cargarReporteDiario();
 
 }, 5000);
@@ -94,12 +136,27 @@ function abrirCaja() {
 
         if (data.ok) {
 
-            document.getElementById('montoApertura').value = '';
-
-            verResumen();
-            cargarHistorialCaja();
-            cargarReporteDiario();
+            document.getElementById(
+                'montoApertura'
+            ).value = '';
         }
+
+        // Refresh SIEMPRE
+        cargarEstadoCaja();
+
+        verResumen();
+
+        cargarHistorialCaja();
+
+        cargarReporteDiario();
+    })
+    .catch(err => {
+        console.error(err);
+
+        showToast(
+            "Error apertura caja",
+            "error"
+        );
     });
 }
 
@@ -133,12 +190,135 @@ function cerrarCaja() {
 
         if (data.ok) {
 
-            document.getElementById('montoCierre').value = '';
-
-            verResumen();
-            cargarHistorialCaja();
-            cargarReporteDiario();
+            document.getElementById(
+                'montoCierre'
+            ).value = '';
         }
+
+        // Refresh SIEMPRE
+        cargarEstadoCaja();
+
+        verResumen();
+
+        cargarHistorialCaja();
+
+        cargarReporteDiario();
+    })
+    .catch(err => {
+        console.error(err);
+
+        showToast(
+            "Error cierre caja",
+            "error"
+        );
+    });
+}
+
+
+// ===============================
+// 💸 EGRESO
+// ===============================
+function registrarEgreso() {
+
+    const monto =
+        Number(document.getElementById('montoEgreso').value);
+
+    const descripcion =
+        document.getElementById('descripcionEgreso')
+        .value
+        .trim();
+
+    // ===========================
+    // VALIDACIONES
+    // ===========================
+    if (isNaN(monto) || monto <= 0) {
+
+        showToast("Monto inválido", "error");
+        return;
+    }
+
+    if (!descripcion) {
+
+        showToast(
+            "Descripción requerida",
+            "error"
+        );
+
+        return;
+    }
+
+    // ===========================
+    // REQUEST
+    // ===========================
+    fetch(`${API}/egreso`, {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            monto,
+            descripcion
+        })
+
+    })
+    .then(async r => {
+
+        const data = await r.json();
+
+        return {
+            okHttp: r.ok,
+            data
+        };
+    })
+    .then(({ okHttp, data }) => {
+
+        showToast(
+            data.ok
+                ? "Egreso registrado"
+                : data.error,
+
+            data.ok
+                ? "success"
+                : "error"
+        );
+
+        // =======================
+        // LIMPIAR FORMULARIO
+        // =======================
+        if (data.ok) {
+
+            document.getElementById(
+                'montoEgreso'
+            ).value = '';
+
+            document.getElementById(
+                'descripcionEgreso'
+            ).value = '';
+        }
+
+        // =======================
+        // REFRESH SIEMPRE
+        // =======================
+        cargarEstadoCaja();
+
+        verResumen();
+
+        cargarHistorialCaja();
+
+        cargarReporteDiario();
+
+    })
+    .catch(err => {
+
+        console.error(err);
+
+        showToast(
+            "Error registrando egreso",
+            "error"
+        );
     });
 }
 
@@ -152,27 +332,65 @@ function verResumen() {
         .then(r => r.json())
         .then(data => {
 
-            document.getElementById('resApertura').innerText =
-                data.apertura || 0;
+            const aperturaEl =
+                document.getElementById('resApertura');
 
-            document.getElementById('resIngresos').innerText =
-                data.ingreso || 0;
+            const ingresosEl =
+                document.getElementById('resIngresos');
 
-            document.getElementById('resEsperado').innerText =
-                data.esperado || 0;
+            const egresosEl =
+                document.getElementById('resEgresos');
+
+            const esperadoEl =
+                document.getElementById('resEsperado');
 
             const diferenciaEl =
                 document.getElementById('resDiferencia');
 
+            // Evitar errores frontend
+            if (
+                !aperturaEl ||
+                !ingresosEl ||
+                !egresosEl ||
+                !esperadoEl ||
+                !diferenciaEl
+            ) {
+                return;
+            }
+
+            aperturaEl.innerText =
+                data.apertura || 0;
+
+            ingresosEl.innerText =
+                data.ingreso || 0;
+
+            egresosEl.innerText =
+                data.egreso || 0;
+
+            esperadoEl.innerText =
+                data.esperado || 0;
+
             const diferencia =
                 data.diferencia || 0;
 
-            diferenciaEl.textContent = `$${diferencia}`;
+            diferenciaEl.textContent =
+                `$${diferencia}`;
 
-            diferenciaEl.classList.remove("positivo", "negativo");
+            diferenciaEl.classList.remove(
+                "positivo",
+                "negativo"
+            );
 
             diferenciaEl.classList.add(
-                diferencia >= 0 ? "positivo" : "negativo"
+                diferencia >= 0
+                    ? "positivo"
+                    : "negativo"
+            );
+        })
+        .catch(err => {
+            console.error(
+                "Error resumen:",
+                err
             );
         });
 }
@@ -185,14 +403,24 @@ async function cargarHistorialCaja() {
 
     try {
 
-        const res = await fetch(`${API}/historial`);
-        const data = await res.json();
+        const res =
+            await fetch(`${API}/historial`);
+
+        const data =
+            await res.json();
 
         const contenedor =
-            document.getElementById('historial-caja');
+            document.getElementById(
+                'historial-caja'
+            );
+
+        if (!contenedor) return;
 
         if (!data.length) {
-            contenedor.innerHTML = '<p>No hay registros</p>';
+
+            contenedor.innerHTML =
+                '<p>No hay registros</p>';
+
             return;
         }
 
@@ -203,6 +431,7 @@ async function cargarHistorialCaja() {
                         <th>Fecha</th>
                         <th>Apertura</th>
                         <th>Ingresos</th>
+                        <th>Egresos</th>
                         <th>Cierre</th>
                     </tr>
                 </thead>
@@ -210,53 +439,114 @@ async function cargarHistorialCaja() {
         `;
 
         data.forEach(dia => {
+
             html += `
                 <tr>
                     <td>${dia.fecha}</td>
-                    <td>$${dia.apertura || 0}</td>
-                    <td>$${dia.ingresos || 0}</td>
-                    <td>$${dia.cierre || 0}</td>
+
+                    <td>
+                        $${dia.apertura || 0}
+                    </td>
+
+                    <td>
+                        $${dia.ingresos || 0}
+                    </td>
+
+                    <td>
+                        $${dia.egresos || 0}
+                    </td>
+
+                    <td>
+                        $${dia.cierre || 0}
+                    </td>
                 </tr>
             `;
         });
 
-        html += '</tbody></table>';
+        html += `
+                </tbody>
+            </table>
+        `;
 
         contenedor.innerHTML = html;
 
     } catch (e) {
-        console.error(e);
+
+        console.error(
+            "Error historial:",
+            e
+        );
     }
 }
 
 
 // ===============================
-// 📋 REPORTE DIARIO (NUEVO)
+// 📋 REPORTE DIARIO
 // ===============================
 async function cargarReporteDiario() {
 
     try {
 
-        const res = await fetch(`${API}/reporte-diario`);
-        const data = await res.json();
+        const res =
+            await fetch(`${API}/reporte-diario`);
 
-        document.getElementById('repApertura').innerText =
+        const data =
+            await res.json();
+
+        const aperturaEl =
+            document.getElementById('repApertura');
+
+        const ingresosEl =
+            document.getElementById('repIngresos');
+
+        const egresosEl =
+            document.getElementById('repEgresos');
+
+        const esperadoEl =
+            document.getElementById('repEsperado');
+
+        const realEl =
+            document.getElementById('repReal');
+
+        const diferenciaEl =
+            document.getElementById('repDiferencia');
+
+        // Evitar nulls
+        if (
+            !aperturaEl ||
+            !ingresosEl ||
+            !egresosEl ||
+            !esperadoEl ||
+            !realEl ||
+            !diferenciaEl
+        ) {
+            return;
+        }
+
+        aperturaEl.innerText =
             `$${data.apertura || 0}`;
 
-        document.getElementById('repIngresos').innerText =
+        ingresosEl.innerText =
             `$${data.ingresos || 0}`;
 
-        document.getElementById('repEsperado').innerText =
+        egresosEl.innerText =
+            `$${data.egresos || 0}`;
+
+        esperadoEl.innerText =
             `$${data.esperado || 0}`;
 
-        document.getElementById('repReal').innerText =
+        realEl.innerText =
             `$${data.real || 0}`;
 
-        document.getElementById('repDiferencia').innerText =
+        diferenciaEl.innerText =
             `$${data.diferencia || 0}`;
 
     } catch (e) {
-        console.error("Error reporte diario", e);
+
+        console.error(
+            "Error reporte diario",
+            e
+        );
     }
 }
 
@@ -264,9 +554,16 @@ async function cargarReporteDiario() {
 // ===============================
 // 🚀 INICIALIZACIÓN
 // ===============================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
 
-    verResumen();
-    cargarHistorialCaja();
-    cargarReporteDiario();
-});
+        cargarEstadoCaja();
+
+        verResumen();
+
+        cargarHistorialCaja();
+
+        cargarReporteDiario();
+    }
+);

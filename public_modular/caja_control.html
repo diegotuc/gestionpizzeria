@@ -14,6 +14,19 @@
     <h1>💰 Control de Caja</h1>
 
     <!-- ========================= -->
+    <!-- ESTADO CAJA -->
+    <!-- ========================= -->
+    <div class="card-box">
+
+        <h2>Estado de Caja</h2>
+
+        <p id="estadoCaja">
+            Consultando estado...
+        </p>
+
+    </div>
+
+    <!-- ========================= -->
     <!-- APERTURA -->
     <!-- ========================= -->
     <div class="card-box">
@@ -45,8 +58,39 @@
             placeholder="Monto final"
         >
 
-        <button class="btn-cierre" onclick="cerrarCaja()">
+        <button
+            class="btn-cierre"
+            onclick="cerrarCaja()"
+        >
             Cerrar Caja
+        </button>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- EGRESOS -->
+    <!-- ========================= -->
+    <div class="card-box">
+
+        <h2>💸 Registrar Egreso</h2>
+
+        <input
+            type="number"
+            id="montoEgreso"
+            placeholder="Monto egreso"
+        >
+
+        <input
+            type="text"
+            id="descripcionEgreso"
+            placeholder="Descripción del egreso"
+        >
+
+        <button
+            class="btn-egreso"
+            onclick="registrarEgreso()"
+        >
+            Registrar Egreso
         </button>
 
     </div>
@@ -97,6 +141,11 @@
             <div class="resumen-card">
                 <h3>Ingresos</h3>
                 <p id="resIngresos">0</p>
+            </div>
+
+            <div class="resumen-card">
+                <h3>Egresos</h3>
+                <p id="resEgresos">0</p>
             </div>
 
             <div class="resumen-card">
@@ -152,6 +201,11 @@
             <div class="card-reporte">
                 <h3>Ingresos</h3>
                 <p id="repIngresos">$0</p>
+            </div>
+
+            <div class="card-reporte">
+                <h3>Egresos</h3>
+                <p id="repEgresos">$0</p>
             </div>
 
             <div class="card-reporte">
