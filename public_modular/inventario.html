@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>
+        Inventario
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="/css/inventario.css"
+    >
+
+</head>
+
+<body>
+
+    <h1>
+        📦 Inventario
+    </h1>
+
+    <!-- ========================= -->
+    <!-- FORMULARIO PRODUCTO -->
+    <!-- ========================= -->
+    <section class="formulario">
+
+        <h2>
+            Nuevo Producto
+        </h2>
+
+        <input
+            type="text"
+            id="nombre"
+            placeholder="Nombre"
+        >
+
+        <input
+            type="number"
+            id="precio"
+            placeholder="Precio"
+        >
+
+        <input
+            type="number"
+            id="stock"
+            placeholder="Stock Inicial"
+        >
+
+        <button id="btn-guardar">
+
+            Guardar Producto
+
+        </button>
+
+    </section>
+
+    <!-- ========================= -->
+    <!-- TABLA PRODUCTOS -->
+    <!-- ========================= -->
+    <section>
+
+        <section>
+
+    <h2>
+        Productos
+    </h2>
+
+    <div class="controles-inventario">
+
+    <input
+        type="text"
+        id="busqueda-producto"
+        placeholder="🔎 Buscar producto..."
+    >
+
+    <select id="filtro-estado">
+
+        <option value="todos">
+            Todos
+        </option>
+
+        <option value="activos">
+            Activos
+        </option>
+
+        <option value="inactivos">
+            Inactivos
+        </option>
+
+    </select>
+
+    <select id="orden-productos">
+
+        <option value="id-desc">
+            ID ↓
+        </option>
+
+        <option value="id-asc">
+            ID ↑
+        </option>
+
+        <option value="az">
+            Nombre A-Z
+        </option>
+
+        <option value="za">
+            Nombre Z-A
+        </option>
+
+        <option value="stock-desc">
+            Stock ↓
+        </option>
+
+        <option value="stock-asc">
+            Stock ↑
+        </option>
+
+    </select>
+
+</div>
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Activo</th>
+                    <th>Acciones</th>
+                    <th>Reposición</th>
+                    
+
+                </tr>
+
+            </thead>
+
+            <tbody id="tabla-productos">
+
+            </tbody>
+
+        </table>
+
+    </section>
+
+    <script src="/js/inventario.js"></script>
+
+</body>
+
+</html>

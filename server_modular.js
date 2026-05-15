@@ -1,7 +1,7 @@
 const express = require('express');
 
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
+//const sqlite3 = require('sqlite3').verbose();
 
 const app = express();
 
@@ -12,13 +12,15 @@ const PORT = 3000;
 // =====================
 // DB
 // =====================
-const db = new sqlite3.Database('./pizzeria_modular.db', (err) => {
+/*const db = new sqlite3.Database('./pizzeria_modular.db', (err) => {
     if (err) {
         console.error("❌ Error SQLite:", err.message);
     } else {
         console.log("📦 SQLite conectado");
     }
-});
+});*/
+
+const db = require('./public_modular/db');
 
 app.locals.db = db;
 
@@ -38,6 +40,41 @@ app.use('/api/ventas', ventasRoutes);
 // Caja
 const cajaControlRoutes = require('./modulos/cajaControl/cajaControl.routes');
 app.use('/api/caja', cajaControlRoutes);
+
+// Inventario
+const inventarioRoutes = require('./public_modular/modulos/inventario/inventario.routes');
+
+app.use('/api/inventario', inventarioRoutes);
+
+// =====================
+// INVENTARIO - TABLAS
+// =====================
+
+// Productos
+db.run(`
+    CREATE TABLE IF NOT EXISTS productos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL,
+        precio REAL NOT NULL,
+        stock REAL NOT NULL DEFAULT 0,
+        activo INTEGER DEFAULT 1
+    )
+`);
+
+// Movimientos de stock
+db.run(`
+    CREATE TABLE IF NOT EXISTS stock_movimientos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        producto_id INTEGER NOT NULL,
+        tipo TEXT NOT NULL,
+        cantidad REAL NOT NULL,
+        motivo TEXT,
+        fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+        FOREIGN KEY(producto_id)
+            REFERENCES productos(id)
+    )
+`);
 
 // =====================
 // TEST

@@ -32,7 +32,23 @@ header {
 .producto {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    align-items: center;
+
+    gap: 20px;
+
+    padding: 12px 0;
+
+    border-bottom: 1px solid #ddd;
+}
+
+.producto span {
+    flex: 1;
+    font-size: 18px;
+}
+
+.producto button {
+    width: 180px;
+    margin-top: 0;
 }
 
 /* ===== CARRITO ===== */

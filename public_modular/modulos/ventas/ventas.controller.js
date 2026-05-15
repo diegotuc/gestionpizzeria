@@ -1,6 +1,9 @@
 // modulos/ventas/ventas.controller.js
 
 const {
+    validarStock,
+    descontarStock,
+    registrarMovimientoStock,
     insertarVenta,
     insertarDetalle
 } = require('./ventas.model');
@@ -117,6 +120,13 @@ function crearVenta(data) {
                 );
             }
 
+// =========================
+// VALIDAR STOCK
+// =========================
+await validarStock(
+    data.detalle
+);
+
             // =========================
             // INSERTAR VENTA
             // =========================
@@ -140,6 +150,20 @@ function crearVenta(data) {
                             if (err2) {
                                 return reject(err2);
                             }
+
+                            // =====================
+// DESCONTAR STOCK
+// =====================
+await descontarStock(
+    data.detalle
+);
+
+// =====================
+// REGISTRAR MOVIMIENTO
+// =====================
+await registrarMovimientoStock(
+    data.detalle
+);    
 
                             try {
 
