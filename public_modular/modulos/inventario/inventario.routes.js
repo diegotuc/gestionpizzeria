@@ -36,9 +36,6 @@ router.get('/productos', (req, res) => {
 
     db.all(sql, [], (err, rows) => {
 
-        // ===========================
-        // ERROR SQLITE
-        // ===========================
         if (err) {
 
             console.error(
@@ -52,9 +49,6 @@ router.get('/productos', (req, res) => {
             });
         }
 
-        // ===========================
-        // RESPUESTA OK
-        // ===========================
         res.json(rows);
     });
 });
@@ -71,13 +65,9 @@ router.post(
     (req, res) => {
 
         const {
-
             nombre,
-
             precio,
-
             stock
-
         } = req.body;
 
         // ==========================
@@ -95,13 +85,9 @@ router.post(
         }
 
         if (
-
             precio === undefined
-
             ||
-
             isNaN(precio)
-
         ) {
 
             return res.status(400).json({
@@ -114,17 +100,11 @@ router.post(
         }
 
         if (
-
             stock === undefined
-
             ||
-
             isNaN(stock)
-
             ||
-
             stock < 0
-
         ) {
 
             return res.status(400).json({
@@ -201,7 +181,6 @@ router.post(
 /**
  * =====================================
  * PRODUCTOS ADMIN
- * MUESTRA ACTIVOS E INACTIVOS
  * =====================================
  */
 router.get(
@@ -223,9 +202,6 @@ router.get(
 
         db.all(sql, [], (err, rows) => {
 
-            // ===========================
-            // ERROR SQLITE
-            // ===========================
             if (err) {
 
                 console.error(
@@ -242,9 +218,6 @@ router.get(
                 });
             }
 
-            // ===========================
-            // RESPUESTA OK
-            // ===========================
             res.json(rows);
         });
     }
@@ -252,7 +225,7 @@ router.get(
 
 /**
  * =====================================
- * INGRESAR STOCK MANUALMENTE
+ * INGRESAR STOCK
  * =====================================
  */
 router.post(
@@ -261,13 +234,9 @@ router.post(
     (req, res) => {
 
         const {
-
             producto_id,
-
             cantidad,
-
             motivo
-
         } = req.body;
 
         // ==========================
@@ -296,30 +265,27 @@ router.post(
         }
 
         // ==========================
-        // ACTUALIZAR STOCK
+        // OBTENER STOCK ACTUAL
         // ==========================
-        const sqlUpdate = `
-            UPDATE productos
-            SET stock = stock + ?
+        const sqlBuscar = `
+            SELECT stock
+            FROM productos
             WHERE id = ?
         `;
 
-        db.run(
+        db.get(
 
-            sqlUpdate,
+            sqlBuscar,
 
-            [
-                cantidad,
-                producto_id
-            ],
+            [producto_id],
 
-            function (err) {
+            (errBuscar, productoActual) => {
 
-                if (err) {
+                if (errBuscar) {
 
                     console.error(
-                        'Error actualizando stock:',
-                        err
+                        'Error obteniendo producto:',
+                        errBuscar
                     );
 
                     return res.status(500).json({
@@ -327,14 +293,11 @@ router.post(
                         ok: false,
 
                         error:
-                            'Error actualizando stock'
+                            'Error obteniendo producto'
                     });
                 }
 
-                // ======================
-                // PRODUCTO NO EXISTE
-                // ======================
-                if (this.changes === 0) {
+                if (!productoActual) {
 
                     return res.status(404).json({
 
@@ -345,45 +308,34 @@ router.post(
                     });
                 }
 
-                // ======================
-                // REGISTRAR MOVIMIENTO
-                // ======================
-                const sqlMovimiento = `
-                    INSERT INTO stock_movimientos
-                    (
-                        producto_id,
-                        tipo,
-                        cantidad,
-                        motivo,
-                        fecha
-                    )
-                    VALUES
-                    (
-                        ?,
-                        'ingreso',
-                        ?,
-                        ?,
-                        datetime('now')
-                    )
+                const stockAnterior =
+                    Number(productoActual.stock);
+
+                // ==========================
+                // UPDATE STOCK
+                // ==========================
+                const sqlUpdate = `
+                    UPDATE productos
+                    SET stock = stock + ?
+                    WHERE id = ?
                 `;
 
                 db.run(
 
-                    sqlMovimiento,
+                    sqlUpdate,
 
                     [
-                        producto_id,
                         cantidad,
-                        motivo || 'Ingreso manual'
+                        producto_id
                     ],
 
-                    (err2) => {
+                    function (errUpdate) {
 
-                        if (err2) {
+                        if (errUpdate) {
 
                             console.error(
-                                'Error registrando movimiento:',
-                                err2
+                                'Error actualizando stock:',
+                                errUpdate
                             );
 
                             return res.status(500).json({
@@ -391,17 +343,136 @@ router.post(
                                 ok: false,
 
                                 error:
-                                    'Error registrando movimiento'
+                                    'Error actualizando stock'
                             });
                         }
 
-                        res.json({
+                        const stockNuevo =
+                            stockAnterior + Number(cantidad);
 
-                            ok: true,
+                        // ======================
+                        // AUDITORÍA
+                        // ======================
+                        const sqlAuditoria = `
+                            INSERT INTO auditoria_productos
+                            (
+                                producto_id,
+                                accion,
+                                valor_anterior,
+                                valor_nuevo,
+                                fecha
+                            )
+                            VALUES
+                            (
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                datetime('now', 'localtime')
+                            )
+                        `;
 
-                            msg:
-                                'Stock actualizado correctamente'
-                        });
+                        const valorAnterior =
+                            JSON.stringify({
+                                stock:
+                                    stockAnterior
+                            });
+
+                        const valorNuevo =
+                            JSON.stringify({
+
+                                stock:
+                                    stockNuevo,
+
+                                cantidad_ingresada:
+                                    cantidad,
+
+                                motivo:
+                                    motivo || 'Ingreso manual'
+                            });
+
+                        db.run(
+
+                            sqlAuditoria,
+
+                            [
+                                producto_id,
+                                'ingreso_stock',
+                                valorAnterior,
+                                valorNuevo
+                            ],
+
+                            (errAuditoria) => {
+
+                                if (errAuditoria) {
+
+                                    console.error(
+                                        'Error auditoría stock:',
+                                        errAuditoria
+                                    );
+                                }
+
+                                // ======================
+                                // MOVIMIENTO STOCK
+                                // ======================
+                                const sqlMovimiento = `
+                                    INSERT INTO stock_movimientos
+                                    (
+                                        producto_id,
+                                        tipo,
+                                        cantidad,
+                                        motivo,
+                                        fecha
+                                    )
+                                    VALUES
+                                    (
+                                        ?,
+                                        'ingreso',
+                                        ?,
+                                        ?,
+                                        datetime('now', 'localtime')
+                                    )
+                                `;
+
+                                db.run(
+
+                                    sqlMovimiento,
+
+                                    [
+                                        producto_id,
+                                        cantidad,
+                                        motivo || 'Ingreso manual'
+                                    ],
+
+                                    (err2) => {
+
+                                        if (err2) {
+
+                                            console.error(
+                                                'Error registrando movimiento:',
+                                                err2
+                                            );
+
+                                            return res.status(500).json({
+
+                                                ok: false,
+
+                                                error:
+                                                    'Error registrando movimiento'
+                                            });
+                                        }
+
+                                        res.json({
+
+                                            ok: true,
+
+                                            msg:
+                                                'Stock actualizado correctamente'
+                                        });
+                                    }
+                                );
+                            }
+                        );
                     }
                 );
             }
@@ -446,24 +517,64 @@ router.put(
                 });
             }
 
-            if (this.changes === 0) {
+            // ==========================
+            // AUDITORÍA
+            // ==========================
+            const sqlAuditoria = `
+                INSERT INTO auditoria_productos
+                (
+                    producto_id,
+                    accion,
+                    valor_anterior,
+                    valor_nuevo,
+                    fecha
+                )
+                VALUES
+                (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    datetime('now', 'localtime')
+                )
+            `;
 
-                return res.status(404).json({
+            db.run(
 
-                    ok: false,
+                sqlAuditoria,
 
-                    error:
-                        'Producto no encontrado'
-                });
-            }
+                [
+                    id,
+                    'desactivar_producto',
 
-            res.json({
+                    JSON.stringify({
+                        estado: 'activo'
+                    }),
 
-                ok: true,
+                    JSON.stringify({
+                        estado: 'desactivado'
+                    })
+                ],
 
-                msg:
-                    'Producto desactivado'
-            });
+                (errAuditoria) => {
+
+                    if (errAuditoria) {
+
+                        console.error(
+                            'Error auditoría:',
+                            errAuditoria
+                        );
+                    }
+
+                    res.json({
+
+                        ok: true,
+
+                        msg:
+                            'Producto desactivado'
+                    });
+                }
+            );
         });
     }
 );
@@ -505,24 +616,64 @@ router.put(
                 });
             }
 
-            if (this.changes === 0) {
+            // ==========================
+            // AUDITORÍA
+            // ==========================
+            const sqlAuditoria = `
+                INSERT INTO auditoria_productos
+                (
+                    producto_id,
+                    accion,
+                    valor_anterior,
+                    valor_nuevo,
+                    fecha
+                )
+                VALUES
+                (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    datetime('now', 'localtime')
+                )
+            `;
 
-                return res.status(404).json({
+            db.run(
 
-                    ok: false,
+                sqlAuditoria,
 
-                    error:
-                        'Producto no encontrado'
-                });
-            }
+                [
+                    id,
+                    'reactivar_producto',
 
-            res.json({
+                    JSON.stringify({
+                        estado: 'desactivado'
+                    }),
 
-                ok: true,
+                    JSON.stringify({
+                        estado: 'activo'
+                    })
+                ],
 
-                msg:
-                    'Producto reactivado'
-            });
+                (errAuditoria) => {
+
+                    if (errAuditoria) {
+
+                        console.error(
+                            'Error auditoría:',
+                            errAuditoria
+                        );
+                    }
+
+                    res.json({
+
+                        ok: true,
+
+                        msg:
+                            'Producto reactivado'
+                    });
+                }
+            );
         });
     }
 );
@@ -541,11 +692,8 @@ router.put(
         const id = req.params.id;
 
         const {
-
             nombre,
-
             precio
-
         } = req.body;
 
         // ==========================
@@ -563,13 +711,9 @@ router.put(
         }
 
         if (
-
             precio === undefined
-
             ||
-
             isNaN(precio)
-
         ) {
 
             return res.status(400).json({
@@ -582,33 +726,29 @@ router.put(
         }
 
         // ==========================
-        // UPDATE
+        // PRODUCTO ACTUAL
         // ==========================
-        const sql = `
-            UPDATE productos
-            SET
-                nombre = ?,
-                precio = ?
+        const sqlBuscar = `
+            SELECT
+                nombre,
+                precio
+            FROM productos
             WHERE id = ?
         `;
 
-        db.run(
+        db.get(
 
-            sql,
+            sqlBuscar,
 
-            [
-                nombre.trim(),
-                precio,
-                id
-            ],
+            [id],
 
-            function (err) {
+            (errBuscar, productoActual) => {
 
-                if (err) {
+                if (errBuscar) {
 
                     console.error(
-                        'Error editando producto:',
-                        err
+                        'Error buscando producto:',
+                        errBuscar
                     );
 
                     return res.status(500).json({
@@ -616,11 +756,11 @@ router.put(
                         ok: false,
 
                         error:
-                            'Error editando producto'
+                            'Error buscando producto'
                     });
                 }
 
-                if (this.changes === 0) {
+                if (!productoActual) {
 
                     return res.status(404).json({
 
@@ -631,15 +771,271 @@ router.put(
                     });
                 }
 
-                res.json({
+                // ==========================
+                // UPDATE
+                // ==========================
+                const sqlUpdate = `
+                    UPDATE productos
+                    SET
+                        nombre = ?,
+                        precio = ?
+                    WHERE id = ?
+                `;
 
-                    ok: true,
+                db.run(
 
-                    msg:
-                        'Producto actualizado'
-                });
+                    sqlUpdate,
+
+                    [
+                        nombre.trim(),
+                        precio,
+                        id
+                    ],
+
+                    function (errUpdate) {
+
+                        if (errUpdate) {
+
+                            console.error(
+                                'Error editando producto:',
+                                errUpdate
+                            );
+
+                            return res.status(500).json({
+
+                                ok: false,
+
+                                error:
+                                    'Error editando producto'
+                            });
+                        }
+
+                        // ======================
+                        // AUDITORÍA
+                        // ======================
+                        const sqlAuditoria = `
+                            INSERT INTO auditoria_productos
+                            (
+                                producto_id,
+                                accion,
+                                valor_anterior,
+                                valor_nuevo,
+                                fecha
+                            )
+                            VALUES
+                            (
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                datetime('now', 'localtime')
+                            )
+                        `;
+
+                        const valorAnterior =
+                            JSON.stringify({
+
+                                nombre:
+                                    productoActual.nombre,
+
+                                precio:
+                                    productoActual.precio
+                            });
+
+                        const valorNuevo =
+                            JSON.stringify({
+
+                                nombre:
+                                    nombre.trim(),
+
+                                precio:
+                                    precio
+                            });
+
+                        db.run(
+
+                            sqlAuditoria,
+
+                            [
+                                id,
+                                'editar_producto',
+                                valorAnterior,
+                                valorNuevo
+                            ],
+
+                            (errAuditoria) => {
+
+                                if (errAuditoria) {
+
+                                    console.error(
+                                        'Error registrando auditoría:',
+                                        errAuditoria
+                                    );
+
+                                    return res.status(500).json({
+
+                                        ok: false,
+
+                                        error:
+                                            'Producto actualizado pero auditoría falló'
+                                    });
+                                }
+
+                                res.json({
+
+                                    ok: true,
+
+                                    msg:
+                                        'Producto actualizado'
+                                });
+                            }
+                        );
+                    }
+                );
             }
         );
+    }
+);
+
+/**
+ * =====================================
+ * HISTORIAL AUDITORÍA
+ * =====================================
+ */
+router.get(
+
+    '/auditoria',
+
+    (req, res) => {
+
+        const sql = `
+            SELECT
+                a.id,
+                a.producto_id,
+                p.nombre AS producto_nombre,
+                a.accion,
+                a.valor_anterior,
+                a.valor_nuevo,
+                a.fecha
+            FROM auditoria_productos a
+
+            LEFT JOIN productos p
+                ON p.id = a.producto_id
+
+            ORDER BY a.fecha DESC
+
+            LIMIT 50
+        `;
+
+        db.all(sql, [], (err, rows) => {
+
+            if (err) {
+
+                console.error(
+                    'Error obteniendo auditoría:',
+                    err
+                );
+
+                return res.status(500).json({
+
+                    ok: false,
+
+                    error:
+                        'Error obteniendo auditoría'
+                });
+            }
+
+            res.json(rows);
+        });
+    }
+);
+
+/**
+ * =====================================
+ * MÉTRICAS INVENTARIO
+ * =====================================
+ */
+router.get(
+
+    '/metricas',
+
+    (req, res) => {
+
+        const sql = `
+            SELECT
+
+                COUNT(
+                    CASE
+                        WHEN activo = 1
+                        THEN 1
+                    END
+                ) AS productosActivos,
+
+                COUNT(
+                    CASE
+                        WHEN activo = 0
+                        THEN 1
+                    END
+                ) AS productosInactivos,
+
+                COUNT(
+                    CASE
+                        WHEN stock <= 5
+                        THEN 1
+                    END
+                ) AS productosCriticos,
+
+                COUNT(
+                    CASE
+                        WHEN stock <= 0
+                        THEN 1
+                    END
+                ) AS productosSinStock,
+
+                ROUND(
+                    SUM(precio * stock),
+                    2
+                ) AS valorTotalInventario
+
+            FROM productos
+        `;
+
+        db.get(sql, [], (err, row) => {
+
+            if (err) {
+
+                console.error(
+                    'Error obteniendo métricas:',
+                    err
+                );
+
+                return res.status(500).json({
+
+                    ok: false,
+
+                    error:
+                        'Error obteniendo métricas'
+                });
+            }
+
+            res.json({
+
+                productosActivos:
+                    row.productosActivos || 0,
+
+                productosInactivos:
+                    row.productosInactivos || 0,
+
+                productosCriticos:
+                    row.productosCriticos || 0,
+
+                productosSinStock:
+                    row.productosSinStock || 0,
+
+                valorTotalInventario:
+                    row.valorTotalInventario || 0
+            });
+        });
     }
 );
 

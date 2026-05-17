@@ -1,61 +1,87 @@
 // ==============================
-// MEMORIA PRODUCTOS
+// IMPORTS API
+// ==============================
+import {
+    apiGetProductos,
+    apiCrearProducto,
+    apiEditarProducto,
+    apiDesactivarProducto,
+    apiReactivarProducto,
+    apiIngresarStock,
+    apiGetAuditoria,
+    apiGetMetricas
+} from '/modulos/inventario/api.js';
 
-//const { OK } = require("sqlite3");
+// ==============================
+// IMPORTS RENDER
+// ==============================
+import {
+    renderProductos,
+    renderAuditoria,
+    renderMetricas
+} from '/modulos/inventario/render.js';
 
+// ==============================
+// IMPORT UI
+// ==============================
+// AHORA:
+// - navbar
+// - paneles
+// - filtros UI
+// viven en ui.js
+// ==============================
+import {
+    initUI
+} from '/modulos/inventario/ui.js';
+
+// ==============================
+// ESTADO GLOBAL
 // ==============================
 let productosGlobal = [];
 
+let auditoriaGlobal = [];
+
+let metricasGlobal = {};
+
 // ==============================
-// FILTROS Y ORDENAMIENTO
+// FILTROS
+// ==============================
+// SE MANTIENE AQUÍ
+// porque pertenece a lógica
+// NO a manipulación visual
 // ==============================
 function aplicarFiltros() {
 
-    // ==========================
-    // BUSCADOR
-    // ==========================
     const texto =
         document.getElementById(
             'busqueda-producto'
-        )
-        .value
-        .toLowerCase()
-        .trim();
+        )?.value?.toLowerCase() || '';
 
-    // ==========================
-    // FILTRO ESTADO
-    // ==========================
     const filtroEstado =
         document.getElementById(
             'filtro-estado'
-        ).value;
+        )?.value || 'todos';
 
-    // ==========================
-    // ORDENAMIENTO
-    // ==========================
     const orden =
         document.getElementById(
             'orden-productos'
-        ).value;
+        )?.value || 'id-desc';
 
-    // ==========================
-    // COPIA SEGURA
-    // ==========================
     let resultado =
         [...productosGlobal];
 
     // ==========================
     // BUSCADOR
     // ==========================
-    resultado = resultado.filter(prod =>
+    resultado = resultado.filter(p =>
 
-        prod.nombre
+        p.nombre
             .toLowerCase()
             .includes(texto)
 
         ||
 
-        String(prod.id)
+        String(p.id)
             .includes(texto)
     );
 
@@ -66,7 +92,7 @@ function aplicarFiltros() {
 
         resultado =
             resultado.filter(
-                prod => Number(prod.activo) === 1
+                p => Number(p.activo) === 1
             );
     }
 
@@ -74,7 +100,7 @@ function aplicarFiltros() {
 
         resultado =
             resultado.filter(
-                prod => Number(prod.activo) === 0
+                p => Number(p.activo) === 0
             );
     }
 
@@ -86,9 +112,7 @@ function aplicarFiltros() {
         case 'id-desc':
 
             resultado.sort(
-                (a, b) =>
-                    Number(b.id) -
-                    Number(a.id)
+                (a, b) => b.id - a.id
             );
 
             break;
@@ -96,9 +120,7 @@ function aplicarFiltros() {
         case 'id-asc':
 
             resultado.sort(
-                (a, b) =>
-                    Number(a.id) -
-                    Number(b.id)
+                (a, b) => a.id - b.id
             );
 
             break;
@@ -107,10 +129,9 @@ function aplicarFiltros() {
 
             resultado.sort(
                 (a, b) =>
-                    String(a.nombre)
-                        .localeCompare(
-                            String(b.nombre)
-                        )
+                    a.nombre.localeCompare(
+                        b.nombre
+                    )
             );
 
             break;
@@ -119,10 +140,9 @@ function aplicarFiltros() {
 
             resultado.sort(
                 (a, b) =>
-                    String(b.nombre)
-                        .localeCompare(
-                            String(a.nombre)
-                        )
+                    b.nombre.localeCompare(
+                        a.nombre
+                    )
             );
 
             break;
@@ -131,8 +151,7 @@ function aplicarFiltros() {
 
             resultado.sort(
                 (a, b) =>
-                    Number(b.stock) -
-                    Number(a.stock)
+                    b.stock - a.stock
             );
 
             break;
@@ -141,637 +160,287 @@ function aplicarFiltros() {
 
             resultado.sort(
                 (a, b) =>
-                    Number(a.stock) -
-                    Number(b.stock)
+                    a.stock - b.stock
             );
 
             break;
     }
 
-    // ==========================
-    // RENDER FINAL
-    // ==========================
     renderProductos(resultado);
 }
 
 // ==============================
-// RENDER PRODUCTOS
+// EXPONER FILTROS A UI.JS
 // ==============================
-function renderProductos(productos) {
+// ui.js necesita poder ejecutar
+// aplicarFiltros()
+// ==============================
+window.inventarioApp = {
 
-    const tbody =
-        document.getElementById(
-            'tabla-productos'
-        );
-
-    tbody.innerHTML = '';
-
-    productos.forEach(prod => {
-
-        const tr =
-            document.createElement('tr');
-
-        // ==========================
-        // ALERTAS VISUALES STOCK
-        // ==========================
-        let estadoStock = '';
-        let claseStock = '';
-
-        if (Number(prod.stock) <= 5) {
-
-            estadoStock = '🔴 CRÍTICO (REPONER)';
-            claseStock = 'stock-critico';
-
-        } else if (Number(prod.stock) < 10) {
-
-            estadoStock = '🟠 BAJO (REPONER EN BREVE)';
-            claseStock = 'stock-bajo';
-        }else if (Number(prod.stock) >= 10) {
-
-            estadoStock = '🟢 ALTO';
-            claseStock = 'stock-bajo';
-        }
-
-    
-
-        // ==========================
-        // APLICAR CLASE VISUAL
-        // ==========================
-        tr.classList.add(claseStock);
-
-        tr.innerHTML = `
-
-            <td>${prod.id}</td>
-
-            <td>${prod.nombre}</td>
-
-            <td>$${prod.precio}</td>
-
-            <td>
-
-                ${prod.stock}
-
-                ${estadoStock
-                    ? `<div class="badge-stock">${estadoStock}</div>`
-                    : ''
-                }
-
-            </td>
-
-            <td>
-                ${Number(prod.activo) === 1 ? 'Sí' : 'No'}
-            </td>
-
-            <td>
-
-                <button
-                    onclick="
-                        editarProducto(
-                            ${prod.id},
-                            '${prod.nombre}',
-                            ${prod.precio}
-                        )
-                    "
-                >
-                    Editar
-                </button>
-
-                ${
-
-                    Number(prod.activo) === 1
-
-                    ?
-
-                    `
-                        <button
-                            onclick="
-                                desactivarProducto(
-                                    ${prod.id}
-                                )
-                            "
-                        >
-                            Desactivar
-                        </button>
-                    `
-
-                    :
-
-                    `
-                        <button
-                            onclick="
-                                reactivarProducto(
-                                    ${prod.id}
-                                )
-                            "
-                        >
-                            Reactivar
-                        </button>
-                    `
-                }
-
-            </td>
-
-            <td>
-
-                <button
-                    onclick="
-                        ingresarStock(
-                            ${prod.id},
-                            '${prod.nombre}'
-                        )
-                    "
-                >
-                    Ingresar
-                </button>
-
-            </td>
-
-        `;
-
-        tbody.appendChild(tr);
-    });
-}
+    aplicarFiltros
+};
 
 // ==============================
-// CARGAR PRODUCTOS
+// LOADERS
 // ==============================
 async function cargarProductos() {
 
-    try {
+    const data =
+        await apiGetProductos();
 
-        const res = await fetch(
-            '/api/inventario/productos-admin'
-        );
+    productosGlobal =
+        data;
 
-        const productos =
-            await res.json();
+    aplicarFiltros();
+}
 
-        // ======================
-        // GUARDAR MEMORIA
-        // ======================
-        productosGlobal = productos;
+async function cargarAuditoria() {
 
-        // ======================
-        // APLICAR FILTROS
-        // ======================
-        aplicarFiltros();
+    const data =
+        await apiGetAuditoria();
 
-    } catch (error) {
+    auditoriaGlobal =
+        data;
 
-        console.error(
-            'Error cargando productos:',
-            error
-        );
-    }
+    renderAuditoria(
+        auditoriaGlobal
+    );
+}
+
+async function cargarMetricas() {
+
+    const data =
+        await apiGetMetricas();
+
+    metricasGlobal =
+        data;
+
+    renderMetricas(
+        metricasGlobal
+    );
 }
 
 // ==============================
-// GUARDAR PRODUCTO
+// REFRESH GLOBAL
 // ==============================
-document.getElementById(
-    'btn-guardar'
-).addEventListener(
+async function refrescarTodo() {
 
-    'click',
+    await Promise.all([
 
-    async () => {
+        cargarProductos(),
 
-        const nombre =
-            document.getElementById(
-                'nombre'
-            ).value;
+        cargarAuditoria(),
 
-        const precio =
-            parseFloat(
-                document.getElementById(
-                    'precio'
-                ).value
-            );
+        cargarMetricas()
+    ]);
+}
 
-        const stock =
-            parseFloat(
-                document.getElementById(
-                    'stock'
-                ).value
-            );
+// ==============================
+// CREAR PRODUCTO
+// ==============================
+async function crearProducto() {
 
-        try {
+    const nombre =
+        document.getElementById(
+            'nombre'
+        )?.value;
 
-            const res = await fetch(
-
-                '/api/inventario/productos',
-
-                {
-
-                    method: 'POST',
-
-                    headers: {
-                        'Content-Type':
-                            'application/json'
-                    },
-
-                    body: JSON.stringify({
-
-                        nombre,
-                        precio,
-                        stock
-                    })
-                }
-            );
-
-            const data =
-                await res.json();
-
-            if (!data.ok) {
-
-                alert(data.error);
-
-                return;
-            }
-
-            alert(
-                '✅ Producto creado'
-            );
-
-            document.getElementById(
-                'nombre'
-            ).value = '';
-
+    const precio =
+        parseFloat(
             document.getElementById(
                 'precio'
-            ).value = '';
+            )?.value
+        );
 
+    const stock =
+        parseFloat(
             document.getElementById(
                 'stock'
-            ).value = '';
-
-            cargarProductos();
-
-        } catch (error) {
-
-            console.error(
-                'Error creando producto:',
-                error
-            );
-
-            alert(
-                'Error creando producto'
-            );
-        }
-    }
-);
-
-// ==============================
-// EDITAR PRODUCTO
-// ==============================
-async function editarProducto(
-
-    id,
-
-    nombreActual,
-
-    precioActual
-
-) {
-
-    // ==========================
-    // NUEVO NOMBRE
-    // ==========================
-    const nuevoNombre = prompt(
-
-        'Nuevo nombre:',
-
-        nombreActual
-    );
-
-    if (nuevoNombre === null) {
-        return;
-    }
-
-    if (nuevoNombre.trim() === '') {
-
-        alert(
-            'Nombre inválido'
+            )?.value
         );
-
-        return;
-    }
-
-    // ==========================
-    // NUEVO PRECIO
-    // ==========================
-    const nuevoPrecio = prompt(
-
-        'Nuevo precio:',
-
-        precioActual
-    );
-
-    if (nuevoPrecio === null) {
-        return;
-    }
-
-    const precioNumero =
-        parseFloat(nuevoPrecio);
-
-    if (isNaN(precioNumero)) {
-
-        alert(
-            'Precio inválido'
-        );
-
-        return;
-    }
-
-    try {
-
-        const res = await fetch(
-
-            `/api/inventario/productos/${id}`,
-
-            {
-
-                method: 'PUT',
-
-                headers: {
-
-                    'Content-Type':
-                        'application/json'
-                },
-
-                body: JSON.stringify({
-
-                    nombre:
-                        nuevoNombre,
-
-                    precio:
-                        precioNumero
-                })
-            }
-        );
-
-        const data =
-            await res.json();
-
-        if (!data.ok) {
-
-            alert(data.error);
-
-            return;
-        }
-
-        alert(
-            '✅ Producto actualizado'
-        );
-
-        cargarProductos();
-
-    } catch (error) {
-
-        console.error(
-            'Error editando producto:',
-            error
-        );
-
-        alert(
-            'Error editando producto'
-        );
-    }
-}
-
-// ==============================
-// DESACTIVAR PRODUCTO
-// ==============================
-async function desactivarProducto(id) {
-
-    const confirmar = confirm(
-        '¿Desactivar producto?'
-    );
-
-    if (!confirmar) {
-        return;
-    }
-
-    try {
-
-        const res = await fetch(
-
-            `/api/inventario/productos/${id}/desactivar`,
-
-            {
-                method: 'PUT'
-            }
-        );
-
-        const data = await res.json();
-
-        if (!data.ok) {
-
-            alert(data.error);
-
-            return;
-        }
-
-        alert(
-            '✅ Producto desactivado'
-        );
-
-        cargarProductos();
-
-    } catch (error) {
-
-        console.error(
-            'Error desactivando producto:',
-            error
-        );
-
-        alert(
-            'Error desactivando producto'
-        );
-    }
-}
-
-// ==============================
-// REACTIVAR PRODUCTO
-// ==============================
-async function reactivarProducto(id) {
-
-    try {
-
-        const res = await fetch(
-
-            `/api/inventario/productos/${id}/reactivar`,
-
-            {
-                method: 'PUT'
-            }
-        );
-
-        const data = await res.json();
-
-        if (!data.ok) {
-
-            alert(data.error);
-
-            return;
-        }
-
-        alert(
-            '✅ Producto reactivado'
-        );
-
-        cargarProductos();
-
-    } catch (error) {
-
-        console.error(
-            'Error reactivando producto:',
-            error
-        );
-
-        alert(
-            'Error reactivando producto'
-        );
-    }
-}
-
-// ==============================
-// INGRESAR STOCK
-// ==============================
-async function ingresarStock(
-
-    productoId,
-
-    nombreProducto
-
-) {
-
-    const cantidad = prompt(
-
-        `Ingresar cantidad para:\n${nombreProducto}`
-
-    );
-
-    if (cantidad === null) {
-        return;
-    }
-
-    const cantidadNumero =
-        parseFloat(cantidad);
 
     if (
 
-        isNaN(cantidadNumero)
+        !nombre ||
 
-        ||
+        isNaN(precio) ||
 
-        cantidadNumero <= 0
+        isNaN(stock)
 
     ) {
-
-        alert(
-            'Cantidad inválida'
-        );
 
         return;
     }
 
-    try {
+    await apiCrearProducto({
 
-        const res = await fetch(
+        nombre,
+        precio,
+        stock
+    });
 
-            '/api/inventario/ingresar-stock',
+    limpiarFormulario();
 
-            {
-
-                method: 'POST',
-
-                headers: {
-
-                    'Content-Type':
-                        'application/json'
-                },
-
-                body: JSON.stringify({
-
-                    producto_id:
-                        productoId,
-
-                    cantidad:
-                        cantidadNumero,
-
-                    motivo:
-                        'Ingreso desde panel'
-                })
-            }
-        );
-
-        const data =
-            await res.json();
-
-        if (!data.ok) {
-
-            alert(data.error);
-
-            return;
-        }
-
-        alert(
-            '✅ Stock actualizado'
-        );
-
-        cargarProductos();
-
-    } catch (error) {
-
-        console.error(
-            'Error ingresando stock:',
-            error
-        );
-
-        alert(
-            'Error ingresando stock'
-        );
-    }
+    refrescarTodo();
 }
 
 // ==============================
-// BUSCADOR
+// LIMPIAR FORM
 // ==============================
-document.getElementById(
-    'busqueda-producto'
-).addEventListener(
+function limpiarFormulario() {
 
-    'input',
+    document.getElementById(
+        'nombre'
+    ).value = '';
 
-    aplicarFiltros
-);
+    document.getElementById(
+        'precio'
+    ).value = '';
 
-// ==============================
-// FILTRO ESTADO
-// ==============================
-document.getElementById(
-    'filtro-estado'
-).addEventListener(
-
-    'change',
-
-    aplicarFiltros
-);
+    document.getElementById(
+        'stock'
+    ).value = '';
+}
 
 // ==============================
-// ORDENAMIENTO
+// UI BRIDGE
 // ==============================
-document.getElementById(
-    'orden-productos'
-).addEventListener(
+// render.js ejecuta acciones
+// desde botones dinámicos
+// ==============================
+window.inventarioUI = {
 
-    'change',
+    editar: async (
+        id,
+        nombre,
+        precio
+    ) => {
 
-    aplicarFiltros
-);
+        const n =
+            prompt(
+                'Nombre:',
+                nombre
+            );
+
+        if (!n) return;
+
+        const p =
+            prompt(
+                'Precio:',
+                precio
+            );
+
+        if (!p) return;
+
+        await apiEditarProducto(
+
+            id,
+
+            {
+                nombre: n,
+
+                precio:
+                    parseFloat(p)
+            }
+        );
+
+        refrescarTodo();
+    },
+
+    desactivar: async (id) => {
+
+        if (
+            !confirm(
+                '¿Desactivar producto?'
+            )
+        ) {
+            return;
+        }
+
+        await apiDesactivarProducto(id);
+
+        refrescarTodo();
+    },
+
+    reactivar: async (id) => {
+
+        await apiReactivarProducto(id);
+
+        refrescarTodo();
+    },
+
+    ingresarStock: async (
+        id,
+        nombre
+    ) => {
+
+        const c =
+            prompt(
+                `Cantidad para ${nombre}`
+            );
+
+        if (!c) return;
+
+        await apiIngresarStock({
+
+            producto_id: id,
+
+            cantidad:
+                parseFloat(c),
+
+            motivo:
+                'Inventario'
+        });
+
+        refrescarTodo();
+    }
+};
+
+// ==============================
+// EVENTOS LOCALES
+// ==============================
+// SOLO eventos propios
+// del módulo lógico
+// ==============================
+function setupEventos() {
+
+    document.getElementById(
+        'btn-guardar'
+    )?.addEventListener(
+
+        'click',
+
+        crearProducto
+    );
+}
 
 // ==============================
 // INIT
 // ==============================
-cargarProductos();
+function init() {
+
+    // ==========================
+    // UI
+    // ==========================
+    initUI();
+
+    // ==========================
+    // EVENTOS
+    // ==========================
+    setupEventos();
+
+    // ==========================
+    // CARGA INICIAL
+    // ==========================
+    refrescarTodo();
+}
+
+// ==============================
+// START
+// ==============================
+document.addEventListener(
+
+    'DOMContentLoaded',
+
+    init
+);

@@ -1,6 +1,6 @@
 const sqlite3 = require("sqlite3").verbose();
 
-const db = new sqlite3.Database("./pizzeria.db");
+const db = new sqlite3.Database("./pizzeria_modular.db");
 
 db.all("PRAGMA table_info(clientes);", [], (err, rows) => {
   if (err) {

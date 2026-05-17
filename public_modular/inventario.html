@@ -2,155 +2,154 @@
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
+    <title>Inventario</title>
 
-    <title>
-        Inventario
-    </title>
-
-    <link
-        rel="stylesheet"
-        href="/css/inventario.css"
-    >
-
+    <link rel="stylesheet" href="/css/inventario.css">
 </head>
 
 <body>
 
-    <h1>
-        📦 Inventario
-    </h1>
+    <h1>📦 Inventario</h1>
 
     <!-- ========================= -->
-    <!-- FORMULARIO PRODUCTO -->
+    <!-- NAVBAR -->
     <!-- ========================= -->
-    <section class="formulario">
+    <nav class="navbar-inventario">
 
-        <h2>
-            Nuevo Producto
-        </h2>
-
-        <input
-            type="text"
-            id="nombre"
-            placeholder="Nombre"
-        >
-
-        <input
-            type="number"
-            id="precio"
-            placeholder="Precio"
-        >
-
-        <input
-            type="number"
-            id="stock"
-            placeholder="Stock Inicial"
-        >
-
-        <button id="btn-guardar">
-
-            Guardar Producto
-
+        <button id="btn-nav-dashboard">
+            📦 Dashboard
         </button>
+
+        <button id="btn-nav-historial">
+            📋 Historial
+        </button>
+
+        <button id="btn-nav-metricas">
+            📊 Métricas
+        </button>
+
+    </nav>
+
+    <!-- ========================= -->
+    <!-- DASHBOARD -->
+    <!-- ========================= -->
+    <section id="panel-dashboard">
+
+        <!-- FORMULARIO -->
+        <section class="formulario">
+
+            <h2>Nuevo Producto</h2>
+
+            <input type="text" id="nombre" placeholder="Nombre">
+            <input type="number" id="precio" placeholder="Precio">
+            <input type="number" id="stock" placeholder="Stock Inicial">
+
+            <button id="btn-guardar">
+                Guardar Producto
+            </button>
+
+        </section>
+
+        <!-- CONTROLES -->
+        <section>
+
+            <h2>Productos</h2>
+
+            <div class="controles-inventario">
+
+                <input
+                    type="text"
+                    id="busqueda-producto"
+                    placeholder="🔎 Buscar producto..."
+                >
+
+                <select id="filtro-estado">
+                    <option value="todos">Todos</option>
+                    <option value="activos">Activos</option>
+                    <option value="inactivos">Inactivos</option>
+                </select>
+
+                <select id="orden-productos">
+                    <option value="id-desc">ID DESC</option>
+                    <option value="id-asc">ID ASC</option>
+                    <option value="az">A-Z</option>
+                    <option value="za">Z-A</option>
+                    <option value="stock-desc">Stock DESC</option>
+                    <option value="stock-asc">Stock ASC</option>
+                </select>
+
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th>Activo</th>
+                        <th>Acciones</th>
+                        <th>Reposición</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tabla-productos"></tbody>
+            </table>
+
+        </section>
 
     </section>
 
     <!-- ========================= -->
-    <!-- TABLA PRODUCTOS -->
+    <!-- HISTORIAL -->
     <!-- ========================= -->
-    <section>
+    <section id="panel-historial" class="oculto">
 
-        <section>
+        <h2>📋 Historial Administrativo</h2>
 
-    <h2>
-        Productos
-    </h2>
-
-    <div class="controles-inventario">
-
-    <input
-        type="text"
-        id="busqueda-producto"
-        placeholder="🔎 Buscar producto..."
-    >
-
-    <select id="filtro-estado">
-
-        <option value="todos">
-            Todos
-        </option>
-
-        <option value="activos">
-            Activos
-        </option>
-
-        <option value="inactivos">
-            Inactivos
-        </option>
-
-    </select>
-
-    <select id="orden-productos">
-
-        <option value="id-desc">
-            ID ↓
-        </option>
-
-        <option value="id-asc">
-            ID ↑
-        </option>
-
-        <option value="az">
-            Nombre A-Z
-        </option>
-
-        <option value="za">
-            Nombre Z-A
-        </option>
-
-        <option value="stock-desc">
-            Stock ↓
-        </option>
-
-        <option value="stock-asc">
-            Stock ↑
-        </option>
-
-    </select>
-
-</div>
+        <input
+            type="text"
+            id="busqueda-auditoria"
+            placeholder="🔎 Buscar historial..."
+        >
 
         <table>
-
             <thead>
-
                 <tr>
-
                     <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Precio</th>
-                    <th>Stock</th>
-                    <th>Activo</th>
-                    <th>Acciones</th>
-                    <th>Reposición</th>
-                    
-
+                    <th>Producto</th>
+                    <th>Acción</th>
+                    <th>Anterior</th>
+                    <th>Nuevo</th>
+                    <th>Fecha</th>
                 </tr>
-
             </thead>
 
-            <tbody id="tabla-productos">
-
-            </tbody>
-
+            <tbody id="tabla-auditoria"></tbody>
         </table>
 
     </section>
 
-    <script src="/js/inventario.js"></script>
+    <!-- ========================= -->
+    <!-- MÉTRICAS -->
+    <!-- ========================= -->
+    <section id="panel-metricas" class="oculto">
 
+        <h2>📊 Métricas Inventario</h2>
+
+        <div id="metricas-inventario"></div>
+
+    </section>
+
+    <!-- ========================= -->
+    <!-- JS PRINCIPAL -->
+    <!-- ========================= -->
+           <!-- ========================= -->
+            <!-- SCRIPTS -->
+            <!-- ========================= -->
+
+           <script type="module" src="/js/inventario.js"></script>
 </body>
 
 </html>

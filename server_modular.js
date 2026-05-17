@@ -77,6 +77,29 @@ db.run(`
 `);
 
 // =====================
+// AUDITORÍA PRODUCTOS
+// =====================
+db.run(`
+    CREATE TABLE IF NOT EXISTS auditoria_productos (
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        producto_id INTEGER NOT NULL,
+
+        accion TEXT NOT NULL,
+
+        valor_anterior TEXT,
+
+        valor_nuevo TEXT,
+
+        fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+        FOREIGN KEY(producto_id)
+            REFERENCES productos(id)
+    )
+`);
+
+// =====================
 // TEST
 // =====================
 app.get('/api/test', (req, res) => {

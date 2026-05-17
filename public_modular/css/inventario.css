@@ -1,73 +1,141 @@
+/* ==============================
+   BASE
+============================== */
+
 body {
-
-    font-family: Arial;
-
-    padding: 20px;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f4f4f4;
 }
 
 h1 {
-
-    margin-bottom: 20px;
+    padding: 15px;
 }
+
+/* ==============================
+   NAVBAR
+============================== */
+
+.navbar-inventario {
+    display: flex;
+    gap: 10px;
+    padding: 10px 15px;
+    background: #222;
+}
+
+.navbar-inventario button {
+    padding: 10px 14px;
+    border: none;
+    cursor: pointer;
+    color: white;
+    background: #444;
+    border-radius: 5px;
+}
+
+.navbar-inventario button:hover {
+    background: #666;
+}
+
+/* ==============================
+   PANELES
+============================== */
+
+#panel-dashboard,
+#panel-historial,
+#panel-metricas {
+    padding: 15px;
+}
+
+/* ==============================
+   OCULTO (CLAVE DEL SISTEMA)
+============================== */
+
+.oculto {
+    display: none !important;
+}
+
+/* ==============================
+   FORMULARIO
+============================== */
 
 .formulario {
-
-    margin-bottom: 30px;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
 }
 
-input {
-
-    margin: 5px;
-
-    padding: 10px;
+.formulario input {
+    display: block;
+    margin: 8px 0;
+    padding: 8px;
+    width: 250px;
 }
 
-button {
-
-    padding: 10px 15px;
-
-    cursor: pointer;
-}
+/* ==============================
+   TABLA
+============================== */
 
 table {
-
     width: 100%;
-
     border-collapse: collapse;
+    background: white;
 }
 
-th,
-td {
-
-    border: 1px solid #ccc;
-
+th, td {
     padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
 
+/* ==============================
+   STOCK BADGES
+============================== */
+
+.stock-critico {
+    background: #ffdddd;
+}
+
+.stock-bajo {
+    background: #fff3cd;
+}
+
+.stock-alto {
+    background: #ddffdd;
+}
+
+.badge-stock {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #333;
+    color: white;
+}
+
+/* ==============================
+   MÉTRICAS
+============================== */
+
+#metricas-inventario {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+}
+
+.card-metrica {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
     text-align: center;
 }
 
-th {
-
-    background: #f5f5f5;
+.card-metrica.alerta {
+    border-left: 5px solid red;
 }
 
-/* ============================= */
-/* BUSCADOR INVENTARIO */
-/* ============================= */
-
-#busqueda-producto {
-
-    width: 300px;
-
-    max-width: 100%;
-
-    margin-bottom: 15px;
-
-    padding: 10px;
-
-    border: 1px solid #ccc;
-
-    border-radius: 6px;
-
-    font-size: 14px;
+.card-metrica.total {
+    border-left: 5px solid green;
 }
