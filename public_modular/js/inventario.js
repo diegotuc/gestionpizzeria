@@ -12,6 +12,7 @@ import {
     apiGetMetricas
 } from '/modulos/inventario/api.js';
 
+
 // ==============================
 // IMPORTS RENDER
 // ==============================
@@ -42,6 +43,37 @@ let productosGlobal = [];
 let auditoriaGlobal = [];
 
 let metricasGlobal = {};
+
+// ==============================
+// FORMATEAR FECHA ARGENTINA
+// ==============================
+function formatearFechaArgentina(fecha) {
+
+    if (!fecha) return '-';
+
+    const fechaObj =
+        new Date(fecha);
+
+    return fechaObj.toLocaleString(
+
+        'es-AR',
+
+        {
+
+            day: '2-digit',
+
+            month: '2-digit',
+
+            year: 'numeric',
+
+            hour: '2-digit',
+
+            minute: '2-digit',
+
+            second: '2-digit'
+        }
+    );
+}
 
 // ==============================
 // FILTROS
@@ -172,9 +204,6 @@ function aplicarFiltros() {
 // ==============================
 // EXPONER FILTROS A UI.JS
 // ==============================
-// ui.js necesita poder ejecutar
-// aplicarFiltros()
-// ==============================
 window.inventarioApp = {
 
     aplicarFiltros
@@ -199,8 +228,19 @@ async function cargarAuditoria() {
     const data =
         await apiGetAuditoria();
 
+    // ==========================
+    // FORMATEAR FECHAS
+    // ==========================
     auditoriaGlobal =
-        data;
+        data.map(item => ({
+
+            ...item,
+
+            fecha:
+                formatearFechaArgentina(
+                    item.fecha
+                )
+        }));
 
     renderAuditoria(
         auditoriaGlobal
@@ -234,6 +274,15 @@ async function refrescarTodo() {
         cargarMetricas()
     ]);
 }
+
+// ==============================
+// AUTO REFRESH
+// ==============================
+setInterval(() => {
+
+    refrescarTodo();
+
+}, 5000);
 
 // ==============================
 // CREAR PRODUCTO
@@ -304,9 +353,6 @@ function limpiarFormulario() {
 
 // ==============================
 // UI BRIDGE
-// ==============================
-// render.js ejecuta acciones
-// desde botones dinámicos
 // ==============================
 window.inventarioUI = {
 
@@ -398,9 +444,6 @@ window.inventarioUI = {
 
 // ==============================
 // EVENTOS LOCALES
-// ==============================
-// SOLO eventos propios
-// del módulo lógico
 // ==============================
 function setupEventos() {
 

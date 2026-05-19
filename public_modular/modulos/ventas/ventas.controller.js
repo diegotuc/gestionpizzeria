@@ -69,7 +69,7 @@ function registrarIngresoCaja(
                 'ingreso',
                 ?,
                 ?,
-                datetime('now')
+                datetime('now', 'localtime')
             )
         `;
 
@@ -135,7 +135,7 @@ await validarStock(
                 (err, ventaId) => {
 
                     if (err) {
-                        return reject(err);
+                        return reject(err,ventaId);
                     }
 
                     // =====================
@@ -162,8 +162,9 @@ await descontarStock(
 // REGISTRAR MOVIMIENTO
 // =====================
 await registrarMovimientoStock(
-    data.detalle
-);    
+    data.detalle,
+    ventaId
+);   
 
                             try {
 

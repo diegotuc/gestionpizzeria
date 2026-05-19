@@ -952,6 +952,77 @@ router.get(
 
 /**
  * =====================================
+ * HISTORIAL MOVIMIENTOS STOCK
+ * =====================================
+ */
+router.get(
+
+    '/movimientos',
+
+    (req, res) => {
+
+        const sql = `
+            SELECT
+
+                sm.id,
+
+                sm.producto_id,
+
+                p.nombre AS producto_nombre,
+
+                sm.tipo,
+
+                sm.cantidad,
+
+                sm.motivo,
+
+                sm.referencia_id,
+
+                sm.usuario,
+
+                sm.stock_anterior,
+
+                sm.stock_nuevo,
+
+                sm.observacion,
+
+                sm.fecha
+
+            FROM stock_movimientos sm
+
+            LEFT JOIN productos p
+                ON p.id = sm.producto_id
+
+            ORDER BY sm.fecha DESC
+
+            LIMIT 100
+        `;
+
+        db.all(sql, [], (err, rows) => {
+
+            if (err) {
+
+                console.error(
+                    'Error obteniendo movimientos:',
+                    err
+                );
+
+                return res.status(500).json({
+
+                    ok: false,
+
+                    error:
+                        'Error obteniendo movimientos'
+                });
+            }
+
+            res.json(rows);
+        });
+    }
+);
+
+/**
+ * =====================================
  * MÉTRICAS INVENTARIO
  * =====================================
  */

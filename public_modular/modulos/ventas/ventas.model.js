@@ -154,60 +154,139 @@ function descontarStock(detalle) {
  * =====================================
  */
 function registrarMovimientoStock(
-    detalle
+    detalle,
+    ventaId = null,
+    referencia_id,
+    stock_anterior,
+    stock_nuevo
+
 ) {
 
     return new Promise((resolve, reject) => {
 
-        const sql = `
-            INSERT INTO stock_movimientos
-            (
-                producto_id,
-                tipo,
-                cantidad,
-                motivo,
-                fecha
-            )
-            VALUES
-            (
-                ?,
-                'venta',
-                ?,
-                ?,
-                datetime('now')
-            )
-        `;
+        if (!detalle || detalle.length === 0) {
 
-        const stmt = db.prepare(sql);
+            return resolve(true);
+        }
+
+        let pendientes = detalle.length;
 
         detalle.forEach(item => {
 
-            stmt.run(
-                [
-                    item.producto_id,
-                    item.cantidad,
-                    'Venta automática'
-                ],
+            // =========================
+            // OBTENER STOCK ACTUAL
+            // =========================
+            const sqlBuscar = `
+                SELECT stock
+                FROM productos
+                WHERE id = ?
+            `;
 
-                (err) => {
+            db.get(
 
-                    if (err) {
-                        console.error(
-                            'Error registrando movimiento:',
-                            err
+                sqlBuscar,
+
+                [item.producto_id],
+
+                (errBuscar, producto) => {
+
+                    if (errBuscar) {
+
+                        return reject(errBuscar);
+                    }
+
+                    if (!producto) {
+
+                        return reject(
+                            new Error(
+                                'Producto no encontrado'
+                            )
                         );
                     }
+
+                    // =========================
+                    // STOCKS
+                    // =========================
+                    const stockNuevo =
+                        Number(producto.stock);
+
+                    const stockAnterior =
+                        stockNuevo +
+                        Number(item.cantidad);
+
+                    // =========================
+                    // INSERT MOVIMIENTO
+                    // =========================
+                    const sqlMovimiento = `
+                        INSERT INTO stock_movimientos
+                        (
+                            producto_id,
+                            tipo,
+                            cantidad,
+                            motivo,
+                            referencia_id,
+                            usuario,
+                            stock_anterior,
+                            stock_nuevo,
+                            observacion,
+                            fecha
+                        )
+                        VALUES
+                        (
+                            ?,
+                            'venta',
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            datetime('now', 'localtime')
+                        )
+                    `;
+
+                    db.run(
+
+                        sqlMovimiento,
+
+                        [
+                            item.producto_id,
+
+                            item.cantidad,
+
+                            'Venta automática',
+
+                            ventaId,
+
+                            'sistema',
+
+                            stockAnterior,
+
+                            stockNuevo,
+
+                            `Venta #${ventaId}`
+                        ],
+
+                        (errInsert) => {
+
+                            if (errInsert) {
+
+                                return reject(
+                                    errInsert
+                                );
+                            }
+
+                            pendientes--;
+
+                            if (pendientes === 0) {
+
+                                resolve(true);
+                            }
+                        }
+                    );
                 }
             );
-        });
-
-        stmt.finalize((err) => {
-
-            if (err) {
-                return reject(err);
-            }
-
-            resolve(true);
         });
     });
 }
@@ -220,6 +299,7 @@ function registrarMovimientoStock(
 function insertarVenta(
     venta,
     callback
+    
 ) {
 
     const { total } = venta;
@@ -235,7 +315,7 @@ function insertarVenta(
         (
             ?,
             ?,
-            datetime('now')
+            datetime('now', 'localtime')
         )
     `;
 

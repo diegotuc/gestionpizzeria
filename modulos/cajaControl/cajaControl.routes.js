@@ -174,7 +174,7 @@ router.post('/egreso', (req, res) => {
                 'egreso',
                 ?,
                 ?,
-                datetime('now')
+                datetime('now', 'localtime')
             )
         `, [monto, descripcion], (err) => {
 
