@@ -29,6 +29,7 @@ app.locals.db = db;
 // =====================
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public_modular')));
+
 // =====================
 // ROUTES
 // =====================
@@ -45,6 +46,26 @@ app.use('/api/caja', cajaControlRoutes);
 const inventarioRoutes = require('./public_modular/modulos/inventario/inventario.routes');
 
 app.use('/api/inventario', inventarioRoutes);
+
+// Dashboard
+const dashboardRoutes =
+require('./public_modular/modulos/dashboard/dashboard.routes');
+
+app.use('/api/dashboard', dashboardRoutes);
+
+// Reportes
+const reportesRoutes =
+require('./public_modular/modulos/reportes/reportes.routes');
+
+app.use('/api/reportes', reportesRoutes);
+
+// Pedidos
+const pedidosRoutes =
+require('./public_modular/modulos/pedidos/pedidos.routes');
+
+console.log(pedidosRoutes);
+
+app.use('/api/pedidos', pedidosRoutes);
 
 // =====================
 // INVENTARIO - TABLAS
@@ -98,6 +119,48 @@ db.run(`
             REFERENCES productos(id)
     )
 `);
+
+// =====================
+// PEDIDOS
+// =====================
+
+console.log("🔥 CREANDO TABLA PEDIDOS");
+
+db.run(`
+    CREATE TABLE IF NOT EXISTS pedidos (
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        cliente TEXT NOT NULL,
+
+        telefono TEXT,
+
+        direccion TEXT,
+
+        detalle TEXT,
+
+        total REAL NOT NULL DEFAULT 0,
+
+        estado TEXT NOT NULL DEFAULT 'pendiente',
+
+        observaciones TEXT,
+
+        created_at DATETIME DEFAULT (
+            datetime('now', 'localtime')
+        ),
+
+        updated_at DATETIME DEFAULT (
+            datetime('now', 'localtime')
+        )
+    )
+`, (err) => {
+
+    if (err) {
+        console.error("❌ Error creando pedidos:", err.message);
+    } else {
+        console.log("✅ Tabla pedidos OK");
+    }
+});
 
 // =====================
 // TEST

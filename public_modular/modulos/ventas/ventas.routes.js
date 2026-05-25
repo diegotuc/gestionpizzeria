@@ -23,4 +23,44 @@ router.get('/', (req, res) => {
     res.json({ ok: true, msg: "Ruta ventas OK" });
 });
 
+// =====================================
+// LISTADO REAL DE VENTAS
+// =====================================
+router.get('/listado', (req, res) => {
+
+    const db = require('../../db');
+
+    const sql = `
+        SELECT
+            id,
+            cliente,
+            total,
+            fecha
+        FROM ventas
+        ORDER BY fecha DESC
+        LIMIT 100
+    `;
+
+    db.all(sql, [], (err, rows) => {
+
+        if (err) {
+
+            console.error(
+                'Error obteniendo ventas:',
+                err
+            );
+
+            return res.status(500).json({
+
+                ok: false,
+
+                error:
+                    'Error obteniendo ventas'
+            });
+        }
+
+        res.json(rows || []);
+    });
+});
+
 module.exports = router;

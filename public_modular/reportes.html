@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>
+        Reportes Administrativos
+    </title>
+
+    <link rel="stylesheet" href="/reportes.css">
+
+</head>
+
+<body>
+
+   <div class="contenedor">
+    <div class="menu_centrado"> 
+        <h1>
+            📑 Reportes Administrativos
+        </h1>
+
+        <!-- ========================= -->
+        <!-- MENÚ REPORTES -->
+        <!-- ========================= -->
+        <div class="menu-reportes">
+            <button onclick="cargarReporteVentas()">
+                🧾 Ventas
+            </button>
+            <button onclick="cargarReporteCaja()">
+                💰 Caja
+            </button>
+            <button onclick="cargarReporteInventario()">
+                📦 Inventario
+            </button>
+            <button onclick="cargarReporteMovimientos()">
+                🔄 Movimientos
+            </button>
+        </div>
+
+        <!-- ========================= -->
+        <!-- FILTROS FECHA -->
+        <!-- ========================= -->
+        <div class="filtros">
+            <div>
+                <h2 class="subtítulo_fecha">BÚSQUEDA POR FECHA</h2>
+                <label>Desde</label>
+                <input type="date" id="fechaDesde">
+            </div>
+            <div>
+                <label>Hasta</label>
+                <input type="date" id="fechaHasta">
+            </div>
+            <button onclick="aplicarFiltros()">
+                🔎 Filtrar
+            </button>
+        </div>
+
+<!-- ========================= -->
+<!-- RESUMEN DINÁMICO -->
+<!-- ========================= -->
+
+<div
+    class="resumen"
+    id="resumenCards"
+>
+</div>
+
+        <!-- ========================= -->
+        <!-- ACCIONES -->
+        <!-- ========================= -->
+        <div class="acciones">
+            <button onclick="imprimirReporte()">
+                🖨 Imprimir
+            </button>
+            <button onclick="volverDashboard()">
+                📊 Dashboard
+            </button>
+        </div>
+    </div>  
+
+    <!-- ========================= -->
+    <!-- TABLA (Queda fuera del centrado) -->
+    <!-- ========================= -->
+    <div class="tabla-contenedor">
+        <table>
+            <thead id="tablaHead"></thead>
+            <tbody id="tablaVentas"></tbody>
+        </table>
+    </div>
+</div>
+
+    
+
+    <script src="/reportes.js"></script>
+
+</body>
+
+</html>

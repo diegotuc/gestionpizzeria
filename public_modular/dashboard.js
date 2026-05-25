@@ -1,35 +1,26 @@
-// ===== INICIO MÓDULO: DASHBOARD =====
+// ===== DASHBOARD MAIN =====
 
 /**
- * Navegación a pedidos
+ * ===============================
+ * NAVEGACIÓN
+ * ===============================
  */
- function irPedidos(){
-    window.location.href = "pedidos.html";
+
+function irPedidos() {
+    window.location.href = 'pedidos.html';
+}
+
+function irInventario() {
+    window.location.href = 'inventario.html';
+}
+
+function irCaja() {
+    window.location.href = 'caja.html';
 }
 
 /**
- * Obtener ventas desde backend
+ * ===============================
+ * INIT
+ * ===============================
  */
-async function cargarVentas(){
-    try {
-        const res = await fetch('/api/ventas');
-        const data = await res.json();
-
-        document.getElementById('total').innerText = data.length;
-
-    } catch (error) {
-        console.error("Error cargando ventas:", error);
-    }
-}
-
-/**
- * Eventos
- */
-document.getElementById('btnPedidos').addEventListener('click', irPedidos);
-
-/**
- * Inicializar
- */
-cargarVentas();
-
-// ===== FIN MÓDULO: DASHBOARD =====
+iniciarDashboard();

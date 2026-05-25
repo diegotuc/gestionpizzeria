@@ -1,4 +1,5 @@
 const express = require('express');
+
 const router = express.Router();
 
 
@@ -10,35 +11,78 @@ router.post('/apertura', (req, res) => {
     const db = req.app.locals.db;
 
     if (!req.body || typeof req.body.monto === "undefined") {
-        return res.status(400).json({ error: "Monto requerido" });
+
+        return res.status(400).json({
+            error: "Monto requerido"
+        });
     }
 
     const monto = Number(req.body.monto);
 
     if (isNaN(monto) || monto <= 0) {
-        return res.status(400).json({ error: 'Monto inválido' });
+
+        return res.status(400).json({
+            error: 'Monto inválido'
+        });
     }
 
     db.get(`
-        SELECT 
-          (SELECT COUNT(*) FROM caja WHERE tipo='apertura' AND date(fecha)=date('now')) as aperturas,
-          (SELECT COUNT(*) FROM caja WHERE tipo='cierre' AND date(fecha)=date('now')) as cierres
+        SELECT
+
+          (
+            SELECT COUNT(*)
+            FROM caja
+            WHERE tipo='apertura'
+            AND date(fecha)=date('now', 'localtime')
+          ) as aperturas,
+
+          (
+            SELECT COUNT(*)
+            FROM caja
+            WHERE tipo='cierre'
+            AND date(fecha)=date('now', 'localtime')
+          ) as cierres
     `, [], (err, row) => {
 
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+
+            return res.status(500).json({
+                error: err.message
+            });
+        }
 
         if (row.aperturas > row.cierres) {
-            return res.status(400).json({ error: 'Caja ya abierta' });
+
+            return res.status(400).json({
+                error: 'Caja ya abierta'
+            });
         }
 
         db.run(`
-            INSERT INTO caja (tipo, monto, descripcion, fecha)
-            VALUES ('apertura', ?, 'Apertura de caja', datetime('now'))
+            INSERT INTO caja (
+                tipo,
+                monto,
+                descripcion,
+                fecha
+            )
+            VALUES (
+                'apertura',
+                ?,
+                'Apertura de caja',
+                datetime('now', 'localtime')
+            )
         `, [monto], (err) => {
 
-            if (err) return res.status(500).json({ error: err.message });
+            if (err) {
 
-            res.json({ ok: true });
+                return res.status(500).json({
+                    error: err.message
+                });
+            }
+
+            res.json({
+                ok: true
+            });
         });
     });
 });
@@ -52,44 +96,83 @@ router.post('/cierre', (req, res) => {
     const db = req.app.locals.db;
 
     if (!req.body || typeof req.body.monto === "undefined") {
-        return res.status(400).json({ error: "Monto requerido" });
+
+        return res.status(400).json({
+            error: "Monto requerido"
+        });
     }
 
     const monto = Number(req.body.monto);
 
     if (isNaN(monto) || monto <= 0) {
-        return res.status(400).json({ error: 'Monto inválido' });
+
+        return res.status(400).json({
+            error: 'Monto inválido'
+        });
     }
 
     db.get(`
-        SELECT tipo 
-        FROM caja 
-        WHERE date(fecha) = date('now')
+        SELECT tipo
+
+        FROM caja
+
+        WHERE date(fecha)=date('now', 'localtime')
+
         ORDER BY id DESC
+
         LIMIT 1
     `, [], (err, row) => {
 
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+
+            return res.status(500).json({
+                error: err.message
+            });
+        }
 
         if (!row) {
-            return res.status(400).json({ error: 'No hay caja abierta' });
+
+            return res.status(400).json({
+                error: 'No hay caja abierta'
+            });
         }
 
         if (row.tipo === 'cierre') {
-            return res.status(400).json({ error: 'La caja ya está cerrada' });
+
+            return res.status(400).json({
+                error: 'La caja ya está cerrada'
+            });
         }
 
         db.run(`
-            INSERT INTO caja (tipo, monto, descripcion, fecha)
-            VALUES ('cierre', ?, 'Cierre de caja', datetime('now'))
+            INSERT INTO caja (
+                tipo,
+                monto,
+                descripcion,
+                fecha
+            )
+            VALUES (
+                'cierre',
+                ?,
+                'Cierre de caja',
+                datetime('now', 'localtime')
+            )
         `, [monto], (err) => {
 
-            if (err) return res.status(500).json({ error: err.message });
+            if (err) {
 
-            res.json({ ok: true });
+                return res.status(500).json({
+                    error: err.message
+                });
+            }
+
+            res.json({
+                ok: true
+            });
         });
     });
 });
+
 
 // ===============================
 // 💸 EGRESO
@@ -98,10 +181,8 @@ router.post('/egreso', (req, res) => {
 
     const db = req.app.locals.db;
 
-    // ===========================
-    // VALIDAR BODY
-    // ===========================
     if (!req.body) {
+
         return res.status(400).json({
             error: 'Datos requeridos'
         });
@@ -112,9 +193,6 @@ router.post('/egreso', (req, res) => {
     const descripcion =
         String(req.body.descripcion || '').trim();
 
-    // ===========================
-    // VALIDAR MONTO
-    // ===========================
     if (isNaN(monto) || monto <= 0) {
 
         return res.status(400).json({
@@ -122,9 +200,6 @@ router.post('/egreso', (req, res) => {
         });
     }
 
-    // ===========================
-    // VALIDAR DESCRIPCIÓN
-    // ===========================
     if (!descripcion) {
 
         return res.status(400).json({
@@ -132,27 +207,31 @@ router.post('/egreso', (req, res) => {
         });
     }
 
-    // ===========================
-    // VALIDAR CAJA ABIERTA
-    // ===========================
     db.get(`
-        SELECT 
-          (SELECT COUNT(*) FROM caja 
-           WHERE tipo='apertura' 
-           AND date(fecha)=date('now')) as aperturas,
+        SELECT
 
-          (SELECT COUNT(*) FROM caja 
-           WHERE tipo='cierre' 
-           AND date(fecha)=date('now')) as cierres
+          (
+            SELECT COUNT(*)
+            FROM caja
+            WHERE tipo='apertura'
+            AND date(fecha)=date('now', 'localtime')
+          ) as aperturas,
+
+          (
+            SELECT COUNT(*)
+            FROM caja
+            WHERE tipo='cierre'
+            AND date(fecha)=date('now', 'localtime')
+          ) as cierres
     `, [], (err, row) => {
 
         if (err) {
+
             return res.status(500).json({
                 error: err.message
             });
         }
 
-        // Caja cerrada
         if (row.aperturas <= row.cierres) {
 
             return res.status(400).json({
@@ -160,9 +239,6 @@ router.post('/egreso', (req, res) => {
             });
         }
 
-        // =======================
-        // INSERTAR EGRESO
-        // =======================
         db.run(`
             INSERT INTO caja (
                 tipo,
@@ -179,6 +255,7 @@ router.post('/egreso', (req, res) => {
         `, [monto, descripcion], (err) => {
 
             if (err) {
+
                 return res.status(500).json({
                     error: err.message
                 });
@@ -205,9 +282,15 @@ router.get('/resumen', (req, res) => {
         GROUP BY tipo
     `, [], (err, rows) => {
 
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+
+            return res.status(500).json({
+                error: err.message
+            });
+        }
 
         const data = {
+
             apertura: 0,
             ingreso: 0,
             egreso: 0,
@@ -215,12 +298,18 @@ router.get('/resumen', (req, res) => {
         };
 
         rows.forEach(r => {
+
             data[r.tipo] = r.total || 0;
         });
 
-       data.esperado = data.apertura + data.ingreso -
-       data.egreso;
-        data.diferencia = data.cierre - data.esperado;
+        data.esperado =
+            data.apertura +
+            data.ingreso -
+            data.egreso;
+
+        data.diferencia =
+            data.cierre -
+            data.esperado;
 
         res.json(data);
     });
@@ -235,15 +324,36 @@ router.get('/estado', (req, res) => {
     const db = req.app.locals.db;
 
     db.get(`
-        SELECT 
-          (SELECT COUNT(*) FROM caja WHERE tipo='apertura' AND date(fecha)=date('now')) as aperturas,
-          (SELECT COUNT(*) FROM caja WHERE tipo='cierre' AND date(fecha)=date('now')) as cierres
+        SELECT
+
+          (
+            SELECT COUNT(*)
+            FROM caja
+            WHERE tipo='apertura'
+            AND date(fecha)=date('now', 'localtime')
+          ) as aperturas,
+
+          (
+            SELECT COUNT(*)
+            FROM caja
+            WHERE tipo='cierre'
+            AND date(fecha)=date('now', 'localtime')
+          ) as cierres
     `, [], (err, row) => {
 
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+
+            return res.status(500).json({
+                error: err.message
+            });
+        }
 
         res.json({
-            estado: row.aperturas > row.cierres ? 'ABIERTA' : 'CERRADA'
+
+            estado:
+                row.aperturas > row.cierres
+                    ? 'ABIERTA'
+                    : 'CERRADA'
         });
     });
 });
@@ -257,33 +367,58 @@ router.get('/historial', (req, res) => {
     const db = req.app.locals.db;
 
     const query = `
-    SELECT 
-        DATE(fecha) as fecha,
+        SELECT
 
-        SUM(CASE WHEN tipo='apertura'
-            THEN monto ELSE 0 END) as apertura,
+            DATE(fecha) as fecha,
 
-        SUM(CASE WHEN tipo='ingreso'
-            THEN monto ELSE 0 END) as ingresos,
+            SUM(
+                CASE
+                    WHEN tipo='apertura'
+                    THEN monto
+                    ELSE 0
+                END
+            ) as apertura,
 
-        SUM(CASE WHEN tipo='egreso'
-            THEN monto ELSE 0 END) as egresos,
+            SUM(
+                CASE
+                    WHEN tipo='ingreso'
+                    THEN monto
+                    ELSE 0
+                END
+            ) as ingresos,
 
-        SUM(CASE WHEN tipo='cierre'
-            THEN monto ELSE 0 END) as cierre
+            SUM(
+                CASE
+                    WHEN tipo='egreso'
+                    THEN monto
+                    ELSE 0
+                END
+            ) as egresos,
 
-    FROM caja
+            SUM(
+                CASE
+                    WHEN tipo='cierre'
+                    THEN monto
+                    ELSE 0
+                END
+            ) as cierre
 
-    GROUP BY DATE(fecha)
+        FROM caja
 
-    ORDER BY fecha DESC
-`;
+        GROUP BY DATE(fecha)
+
+        ORDER BY fecha DESC
+    `;
 
     db.all(query, [], (err, rows) => {
 
         if (err) {
+
             console.error(err);
-            return res.status(500).json({ error: 'Error historial' });
+
+            return res.status(500).json({
+                error: 'Error historial'
+            });
         }
 
         res.json(rows || []);
@@ -292,62 +427,112 @@ router.get('/historial', (req, res) => {
 
 
 // ===============================
-// 📋 REPORTE DIARIO (CORREGIDO DEFINITIVO)
+// 📋 REPORTE DIARIO
 // ===============================
 router.get('/reporte-diario', (req, res) => {
 
     const db = req.app.locals.db;
 
     const query = `
-    SELECT 
-        DATE(fecha) as fecha,
+        SELECT
 
-        SUM(CASE WHEN tipo='apertura'
-            THEN monto ELSE 0 END) as apertura,
+            DATE(fecha) as fecha,
 
-        SUM(CASE WHEN tipo='ingreso'
-            THEN monto ELSE 0 END) as ingresos,
+            SUM(
+                CASE
+                    WHEN tipo='apertura'
+                    THEN monto
+                    ELSE 0
+                END
+            ) as apertura,
 
-        SUM(CASE WHEN tipo='egreso'
-            THEN monto ELSE 0 END) as egresos,
+            SUM(
+                CASE
+                    WHEN tipo='ingreso'
+                    THEN monto
+                    ELSE 0
+                END
+            ) as ingresos,
 
-        SUM(CASE WHEN tipo='cierre'
-            THEN monto ELSE 0 END) as cierre
+            SUM(
+                CASE
+                    WHEN tipo='egreso'
+                    THEN monto
+                    ELSE 0
+                END
+            ) as egresos,
 
-    FROM caja
+            SUM(
+                CASE
+                    WHEN tipo='cierre'
+                    THEN monto
+                    ELSE 0
+                END
+            ) as cierre
 
-    WHERE DATE(fecha) = date('now')
+        FROM caja
 
-    GROUP BY DATE(fecha)
-`;
+        WHERE DATE(fecha)=
+        date('now', 'localtime')
+
+        GROUP BY DATE(fecha)
+    `;
 
     db.get(query, [], (err, row) => {
 
         if (err) {
-            console.error('Error reporte diario:', err);
+
+            console.error(
+                'Error reporte diario:',
+                err
+            );
+
             return res.status(500).json({
                 error: 'Error al generar reporte'
             });
         }
 
-        // 🔥 CLAVE: evitar NULL total
-        const apertura = row?.apertura ?? 0;
-        const ingresos = row?.ingresos ?? 0;
+        const apertura =
+            row?.apertura ?? 0;
 
-        const egresos = row?.egresos ?? 0;
+        const ingresos =
+            row?.ingresos ?? 0;
 
-        const cierreReal = row?.cierre ?? 0;
+        const egresos =
+            row?.egresos ?? 0;
 
-        const esperado = apertura + ingresos - egresos;
-        const diferencia = cierreReal - esperado;
+        const cierreReal =
+            row?.cierre ?? 0;
+
+        const esperado =
+            apertura +
+            ingresos -
+            egresos;
+
+        const diferencia =
+            cierreReal -
+            esperado;
 
         res.json({
-            fecha: row?.fecha || new Date().toISOString().slice(0,10),
+
+            fecha:
+                row?.fecha
+                ||
+                new Date()
+                    .toISOString()
+                    .slice(0, 10),
+
             apertura,
+
             ingresos,
+
             esperado,
+
             egresos,
-            real: cierreReal,
+
+            real:
+                cierreReal,
+
             diferencia
         });
     });

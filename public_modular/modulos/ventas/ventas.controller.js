@@ -135,7 +135,7 @@ await validarStock(
                 (err, ventaId) => {
 
                     if (err) {
-                        return reject(err,ventaId);
+                        return reject(err);
                     }
 
                     // =====================

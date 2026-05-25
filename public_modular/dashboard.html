@@ -1,22 +1,529 @@
 <!-- ===== INICIO MÓDULO: DASHBOARD ===== -->
 <!DOCTYPE html>
 <html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Dashboard</title>
 
-<link rel="stylesheet" href="/public_modular/dashboard/dashboard.css">
+<head>
+
+<meta charset="UTF-8">
+
+<title>Dashboard Administrativo</title>
+
+<link rel="stylesheet" href="/dashboard.css">
+
+<style>
+
+body {
+
+    margin: 0;
+
+    padding: 0;
+
+    font-family: Arial, sans-serif;
+
+    background: #f4f6f9;
+}
+
+.contenedor {
+
+    padding: 20px;
+}
+
+.cards {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(220px, 1fr));
+
+    gap: 15px;
+
+    margin-bottom: 30px;
+}
+
+.card {
+
+    background: white;
+
+    padding: 20px;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.08);
+
+    transition: 0.2s;
+}
+
+.card:hover {
+
+    transform: translateY(-3px);
+}
+
+.card h2 {
+
+    margin-top: 0;
+
+    font-size: 18px;
+
+    color: #333;
+}
+
+.card p {
+
+    font-size: 28px;
+
+    font-weight: bold;
+
+    margin: 10px 0 0;
+}
+
+.alerta {
+
+    border-left:
+        6px solid #ff9800;
+}
+
+.panel-alertas {
+
+    background: white;
+
+    padding: 20px;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.08);
+
+    margin-bottom: 30px;
+}
+
+.alerta-item {
+
+    padding: 10px;
+
+    margin-bottom: 10px;
+
+    border-radius: 8px;
+
+    background: #fff3cd;
+
+    color: #856404;
+}
+
+.ok {
+
+    padding: 10px;
+
+    border-radius: 8px;
+
+    background: #d4edda;
+
+    color: #155724;
+}
+
+/* ================================= */
+/* NUEVAS CARDS ADMIN */
+/* ================================= */
+
+.paneles-admin {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(320px, 1fr));
+
+    gap: 20px;
+
+    margin-bottom: 30px;
+}
+
+.admin-card {
+
+    background: white;
+
+    border-radius: 12px;
+
+    padding: 20px;
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.08);
+
+    min-height: 350px;
+}
+
+.admin-card h2 {
+
+    margin-top: 0;
+
+    margin-bottom: 20px;
+
+    font-size: 20px;
+
+    color: #333;
+}
+
+.lista-admin {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+.item-admin {
+
+    background: #f7f7f7;
+
+    padding: 12px;
+
+    border-radius: 8px;
+
+    border-left:
+        4px solid #2196f3;
+}
+
+.item-admin strong {
+
+    display: block;
+
+    margin-bottom: 5px;
+}
+
+.item-admin small {
+
+    color: #666;
+}
+
+/* ================================= */
+/* BOTONES */
+/* ================================= */
+
+.acciones {
+
+    display: flex;
+
+    gap: 15px;
+
+    flex-wrap: wrap;
+}
+
+.acciones button {
+
+    padding: 12px 20px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #1976d2;
+
+    color: white;
+
+    font-size: 16px;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.acciones button:hover {
+
+    background: #1259a7;
+}
+
+</style>
+
 </head>
+
 <body>
 
-<h1>📊 Dashboard</h1>
+<div class="contenedor">
 
-<button id="btnPedidos">Ir a Pedidos</button>
+      <!-- ========================= -->
+    <!-- ALERTAS -->
+    <!-- ========================= -->
+    <div class="panel-alertas">
 
-<h2>Total ventas: <span id="total">0</span></h2>
+        <h2>
+            🚨 Alertas del Sistema
+        </h2>
 
-<script src="dashboard.js"></script>
+        <div id="alertas">
+            Sin alertas
+        </div>
 
+    </div>
+
+    <h1>
+        📊 Dashboard Administrativo
+    </h1>
+
+    <!-- ========================= -->
+    <!-- MÉTRICAS -->
+    <!-- ========================= -->
+    <div class="cards">
+
+        <div class="card">
+
+            <h2>🧾 Ventas Hoy</h2>
+
+            <p id="ventasHoy">0</p>
+        </div>
+
+        <div class="card">
+
+            <h2>💰 Total Hoy</h2>
+
+            <p id="montoVentas">$0</p>
+        </div>
+
+        <div class="card">
+
+            <h2>🏦 Caja</h2>
+
+            <p id="estadoCaja">
+                CERRADA
+            </p>
+        </div>
+
+        <div class="card">
+
+            <h2>📦 Productos Activos</h2>
+
+            <p id="productosActivos">0</p>
+        </div>
+
+        <div class="card alerta">
+
+            <h2>⚠ Stock Crítico</h2>
+
+            <p id="productosCriticos">0</p>
+        </div>
+
+        <div class="card alerta">
+
+            <h2>🚫 Sin Stock</h2>
+
+            <p id="productosSinStock">0</p>
+        </div>
+
+        <div class="card">
+
+            <h2>💵 Valor Inventario</h2>
+
+            <p id="valorInventario">$0</p>
+        </div>
+
+    </div>
+
+  
+
+    <!-- ========================= -->
+    <!-- PANEL ADMIN -->
+    <!-- ========================= -->
+    <div class="paneles-admin">
+
+        <!-- ===================== -->
+        <!-- VENTAS -->
+        <!-- ===================== -->
+        <div class="admin-card">
+
+            <h2>
+                🧾 Últimas Ventas
+            </h2>
+
+            <div
+                id="ultimasVentas"
+                class="lista-admin"
+            >
+
+                Cargando ventas...
+
+            </div>
+
+        </div>
+
+        <!-- ===================== -->
+        <!-- STOCK -->
+        <!-- ===================== -->
+        <div class="admin-card">
+
+            <h2>
+                📦 Movimientos Stock
+            </h2>
+
+            <div
+                id="movimientosStock"
+                class="lista-admin"
+            >
+
+                Cargando movimientos...
+
+            </div>
+
+        </div>
+
+        <!-- ===================== -->
+        <!-- AUDITORÍA -->
+        <!-- ===================== -->
+        <div class="admin-card">
+
+            <h2>
+                🛠 Auditoría Admin
+            </h2>
+
+            <div
+                id="auditoriaAdmin"
+                class="lista-admin"
+            >
+
+                Cargando auditoría...
+
+            </div>
+
+        </div>
+
+    </div>
+
+<!-- ========================= -->
+<!-- ANALYTICS AVANZADOS -->
+<!-- ========================= -->
+<div class="paneles-admin">
+
+    <!-- ===================== -->
+    <!-- KPIs -->
+    <!-- ===================== -->
+    <div class="admin-card">
+
+        <h2>
+            📈 KPIs Ventas
+        </h2>
+
+        <div class="lista-admin">
+
+            <div class="item-admin">
+
+                <strong>
+                    Ventas Ayer
+                </strong>
+
+                <div id="ventasAyer">
+                    0
+                </div>
+
+            </div>
+
+            <div class="item-admin">
+
+                <strong>
+                    Total Ayer
+                </strong>
+
+                <div id="montoAyer">
+                    $0
+                </div>
+
+            </div>
+
+            <div class="item-admin">
+
+                <strong>
+                    Tendencia
+                </strong>
+
+                <div id="tendenciaVentas">
+                    -
+                </div>
+
+            </div>
+
+            <div class="item-admin">
+
+                <strong>
+                    Diferencia %
+                </strong>
+
+                <div id="diferenciaVentas">
+                    0%
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===================== -->
+    <!-- PRODUCTOS TOP -->
+    <!-- ===================== -->
+    <div class="admin-card">
+
+        <h2>
+            🏆 Productos Más Vendidos
+        </h2>
+
+        <div
+            id="productosTop"
+            class="lista-admin"
+        >
+
+            Cargando estadísticas...
+
+        </div>
+
+    </div>
+
+    <!-- ===================== -->
+    <!-- RESUMEN SEMANAL -->
+    <!-- ===================== -->
+    <div class="admin-card">
+
+        <h2>
+            📊 Resumen Semanal
+        </h2>
+
+        <div
+            id="resumenSemanal"
+            class="lista-admin"
+        >
+
+            Cargando resumen...
+
+        </div>
+
+    </div>
+
+</div>  
+    
+    <!-- ========================= -->
+    <!-- ACCIONES -->
+    <!-- ========================= -->
+    <div class="acciones">
+
+        <button onclick="irPedidos()">
+            📋 Pedidos
+        </button>
+
+        <button onclick="irInventario()">
+            📦 Inventario
+        </button>
+
+        <button onclick="irCaja()">
+            💰 Caja
+        </button>
+
+    </div>
+
+</div>
+
+<script src="./modulos/dashboard/dashboard.api.js"></script>
+
+<script src="./modulos/dashboard/dashboard.render.js"></script>
+
+<script src="./modulos/dashboard/dashboard.ui.js"></script>
+
+<script src="./dashboard.js"></script>
 </body>
 </html>
 <!-- ===== FIN MÓDULO: DASHBOARD ===== -->
