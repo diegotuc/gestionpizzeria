@@ -1,52 +1,213 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
 <meta charset="UTF-8">
-<title>Pedidos</title>
+
+<title>🍕 Cocina - Pedidos</title>
+
+<link rel="stylesheet" href="pedidos.css">
+
 </head>
+
 <body>
 
-<h1>🧾 Pedidos</h1>
+<header class="topbar">
 
-<input type="text" id="cliente" placeholder="Cliente">
-<input type="number" id="total" placeholder="Total">
+    <div>
 
-<button onclick="guardar()">Guardar venta</button>
+        <h1>🍕 Panel de Cocina</h1>
 
-<br><br>
-<button onclick="volver()">← Volver</button>
+        <div id="estadoSistema">
+            🟡 Conectando...
+        </div>
 
-<script>
-async function guardar(){
+    </div>
 
-    const venta = {
-        cliente: document.getElementById('cliente').value,
-        total: parseFloat(document.getElementById('total').value)
-    };
+    <div class="acciones-topbar">
 
-    try {
-        const res = await fetch('/api/ventas', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify(venta)
-        });
+        <button onclick="obtenerPedidos()">
+            🔄 Actualizar
+        </button>
 
-        const data = await res.json();
+        <button onclick="abrirHistorial()">
+            📋 Historial
+        </button>
 
-        if(!res.ok) throw new Error(data.error);
+        <button onclick="setFiltro('todos')">
+            Todos
+        </button>
 
-        alert("Venta guardada ✅");
+        <button onclick="setFiltro('pendiente')">
+            Pendientes
+        </button>
 
-    } catch(e){
-        alert("Error ❌");
-        console.error(e);
-    }
-}
+        <button onclick="setFiltro('preparando')">
+            Preparando
+        </button>
 
-function volver(){
-    window.location.href = "dashboard.html";
-}
-</script>
+        <button onclick="setFiltro('listo')">
+            Listos
+        </button>
+
+        <button onclick="setFiltro('entregado')">
+            Entregados
+        </button>
+
+    </div>
+
+</header>
+
+<!-- ===================================== -->
+<!-- MÉTRICAS -->
+<!-- ===================================== -->
+
+<section class="metricas">
+
+    <div id="contadorPendientes">
+        📊 Pendientes: 0
+    </div>
+
+    <div id="contadorExtra">
+        👨‍🍳 Preparando: 0 |
+        ✅ Listos: 0 |
+        🚚 Entregados: 0
+    </div>
+
+    <div id="contadorCriticos">
+        🚨 Críticos: 0
+    </div>
+
+</section>
+
+<!-- ===================================== -->
+<!-- ALERTAS -->
+<!-- ===================================== -->
+
+<div
+    id="alertaCocina"
+    class="alerta-cocina"
+>
+
+    🚨 COCINA SATURADA
+
+</div>
+
+<div
+    id="alertaCriticos"
+    class="alerta-criticos"
+>
+
+    🚨 EXISTEN PEDIDOS CRÍTICOS
+
+</div>
+
+<!-- ===================================== -->
+<!-- TABLERO -->
+<!-- ===================================== -->
+
+<main class="tablero-cocina">
+
+    <!-- PENDIENTES -->
+
+    <section class="columna">
+
+        <h2
+            id="tituloPendientes"
+            class="titulo-columna pendiente"
+        >
+            🟠 Pendientes
+        </h2>
+
+        <div id="colPendientes"></div>
+
+    </section>
+
+    <!-- PREPARANDO -->
+
+    <section class="columna">
+
+        <h2
+            id="tituloPreparando"
+            class="titulo-columna preparando"
+        >
+            🔵 Preparando
+        </h2>
+
+        <div id="colPreparando"></div>
+
+    </section>
+
+    <!-- LISTOS -->
+
+    <section class="columna">
+
+        <h2
+            id="tituloListos"
+            class="titulo-columna listo"
+        >
+            🟢 Listos
+        </h2>
+
+        <div id="colListos"></div>
+
+    </section>
+
+</main>
+
+<!-- ===================================== -->
+<!-- 📋 MODAL HISTORIAL -->
+<!-- ===================================== -->
+
+<div
+    id="modalHistorial"
+    class="modal-historial"
+    style="display: none;"
+>
+
+    <div class="modal-contenido">
+
+        <div class="modal-header">
+
+            <h2>
+                📋 Historial Pedidos
+            </h2>
+
+            <button
+                onclick="cerrarHistorial()"
+            >
+                ✖
+            </button>
+
+        </div>
+
+        <div
+            id="contenidoHistorial"
+            class="contenido-historial"
+        >
+
+            <p>
+                Cargando historial...
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div id="panelCriticos" class="panel-criticos oculto"></div>
+
+<footer class="footer-panel">
+
+    <button onclick="volver()">
+        ← Volver
+    </button>
+
+</footer>
+
+<script src="pedidos.js"></script>
 
 </body>
 </html>

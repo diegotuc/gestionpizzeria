@@ -162,6 +162,40 @@ db.run(`
     }
 });
 
+// ======================================================
+// 🕒 MIGRACIÓN SLA OPERATIVO
+// ======================================================
+
+// Tiempo inicio pendiente
+db.run(`
+    ALTER TABLE pedidos
+    ADD COLUMN pendiente_at DATETIME
+`, () => {});
+
+// Tiempo inicio preparando
+db.run(`
+    ALTER TABLE pedidos
+    ADD COLUMN preparando_at DATETIME
+`, () => {});
+
+// Tiempo inicio listo
+db.run(`
+    ALTER TABLE pedidos
+    ADD COLUMN listo_at DATETIME
+`, () => {});
+
+// Tiempo entrega
+db.run(`
+    ALTER TABLE pedidos
+    ADD COLUMN entregado_at DATETIME
+`, () => {});
+
+// Tiempo cancelación
+db.run(`
+    ALTER TABLE pedidos
+    ADD COLUMN cancelado_at DATETIME
+`, () => {});
+
 // =====================
 // TEST
 // =====================
