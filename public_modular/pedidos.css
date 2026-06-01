@@ -420,19 +420,31 @@ body {
 
 .acciones button {
 
+    position: relative;
+
     margin: 3px;
 
-    font-size: 14px;
+    font-size: 25px;
 
-    border: none;
+    border: 2px solid black;
 
-    padding: 8px 10px;
+    padding: 10px 14px;
+
+min-width: 52px;
+
+min-height: 52px;
+
+display: flex;
+
+align-items: center;
+
+justify-content: center;
 
     border-radius: 8px;
 
     cursor: pointer;
 
-    background: #eeeeee;
+    /*background: #eeeeee;*/
 
     transition: 0.2s;
 }
@@ -444,6 +456,49 @@ body {
     background: #d6d6d6;
 }
 
+
+/* ========================================
+   TOOLTIP OPERACIONAL
+======================================== */
+
+
+.acciones button::after {
+
+    content: attr(data-tooltip);
+
+    position: absolute;
+
+    bottom: 120%;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    background: rgba(0,0,0,0.9);
+
+    color: white;
+
+    padding: 6px 10px;
+
+    border-radius: 6px;
+
+    font-size: 13px;
+
+    white-space: nowrap;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition: opacity 0.12s ease;
+
+    z-index: 9999;
+}
+
+.acciones button:hover::after {
+
+    opacity: 1;
+}
 
 /* ======================================== */
 /* MODAL HISTORIAL */
@@ -587,35 +642,39 @@ body {
     cursor: pointer;
 }
 
+.panel-alertas-globales {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
 
 .panel-criticos {
 
-    position: fixed;
+    flex: 1;
 
-    top: 20px;
-    right: 20px;
+    min-width: 320px;
 
-    width: 320px;
-    max-height: 400px;
+    max-height: 220px;
 
     overflow-y: auto;
 
-    z-index: 9999;
+    background: #fd4d02;
 
-    background: #b00020;
-    color: white;
+    color: black;
+
+    font-weight: bolder;
 
     padding: 15px;
 
     border-radius: 12px;
 
-    box-shadow: 0 0 15px rgba(0,0,0,.4);
-
-    font-family: Arial;
-
-    resize: both;
-
-    cursor: move;
+    box-shadow: 0 0 10px rgba(0,0,0,.2);
 }
 
 .panel-criticos.oculto {
@@ -628,12 +687,272 @@ body {
 
 .critico-item {
 
+
+    background: rgba(255, 247, 1, 0.256);
+
+    backdrop-filter: blur(2px);
+
+    border: 2px solid rgba(0,0,0,0.65);
+
+    border-radius: 10px;
+
+    padding: 12px;
+
+    min-width: 0;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+
+    min-height: 140px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: space-between;
+}
+
+/* ======================================================
+🧠 CUELLO DE BOTELLA
+====================================================== */
+
+.panel-cuello {
+
+    position: sticky;
+
+    top: 10px;
+
+    z-index: 900;
+
+    margin: 10px;
+
+    padding: 14px;
+
+    border-radius: 10px;
+
+    background: #2a2a2a;
+
+    border-left: 6px solid orange;
+
+    color: white;
+
+    font-weight: bold;
+
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.panel-cuello.oculto {
+    display: none;
+}
+
+.cuello-rojo {
+    border-left-color: red;
+}
+
+.cuello-naranja {
+    border-left-color: orange;
+}
+
+.cuello-amarillo {
+    border-left-color: yellow;
+}
+
+/* ======================================================
+🚨 GRID PANEL CRÍTICOS
+====================================================== */
+
+.criticos-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(260px, 1fr));
+
+    gap: 12px;
+
+    margin-top: 10px;
+}
+
+
+
+.critico-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
     margin-bottom: 10px;
 
-    padding-bottom: 10px;
-
-    border-bottom: 1px solid rgba(255,255,255,.3);
+    gap: 10px;
 }
+
+.btn-ir-pedido {
+
+    border: none;
+
+    background: white;
+
+    color: black;
+
+    font-weight: bold;
+
+    border-radius: 8px;
+
+    padding: 6px 10px;
+
+    cursor: pointer;
+}
+
+
+/* ======================================================
+   🧠 PRIORIDADES OPERACIONALES
+====================================================== */
+
+.prioridad-normal {
+
+    color: #007b04;
+    background: rgba(255, 255, 255, 0.509);
+    border: 2px solid rgba(0,0,0,0.65);
+}
+
+.prioridad-alta {
+
+    color: #fff176;
+    background: rgba(0, 0, 0, 0.509);
+    border: 2px solid rgba(0,0,0,0.65);
+    font-weight: bold;
+}
+
+.prioridad-urgente {
+
+    color: #ffb74d;
+    background: rgba(0, 0, 0, 0.509);
+    border: 2px solid rgba(0,0,0,0.65);
+    font-weight: bold;
+}
+
+.prioridad-critica {
+
+    margin-top: 5px;
+    background: rgba(0, 0, 0, 0.509);
+    border: 2px solid rgba(0,0,0,0.65);
+    color: #ff0000;
+
+    font-weight: bolder;
+
+    font-size: 18px;
+
+    animation:
+        pulseCritica 1s infinite;
+}
+
+/* ======================================================
+   🚨 ANIMACIÓN CRÍTICA
+====================================================== */
+
+@keyframes pulseCritica {
+
+    0% {
+
+        opacity: 1;
+    }
+
+    50% {
+
+        opacity: 0.4;
+    }
+
+    100% {
+
+        opacity: 1;
+    }
+}
+
+
+/* ======================================================
+🎨 COLORES CONTEXTUALES POR ESTADO
+FASE 3.5
+====================================================== */
+
+
+
+
+
+/* ======================================================
+🟢 LISTO
+====================================================== */
+
+/* aqui solo se colore el borde izquierdo con el color del
+lugar donde se encuentra el pedido
+.critico-item.critico-listo {
+
+    background:
+        rgba(46, 125, 50, 0.20);
+
+    border-left:
+        6px solid #2e7d32;
+
+    color: #111;
+}*/
+
+/* ======================================================
+🎨 COLORES CONTEXTUALES POR ESTADO
+FASE 3.5
+====================================================== */
+/* ======================================================
+🟠 PENDIENTE
+====================================================== */
+
+.critico-item.critico-pendiente {
+
+    background:
+        rgba(255, 152, 0, 0.75);
+
+    border:
+        2px solid #e68900;
+
+    color: #1a1a1a;
+}
+
+
+/* ======================================================
+🔵 PREPARANDO
+====================================================== */
+
+.critico-item.critico-preparando {
+
+    background:
+        rgba(25, 118, 210, 0.78);
+
+    border:
+        2px solid #0d5cad;
+
+    color: white;
+}
+
+/* ======================================================
+🟢 LISTO
+====================================================== */
+
+.critico-item.critico-listo {
+
+    background:
+        rgba(46, 125, 50, 0.78);
+
+    border:
+        2px solid #256628;
+
+    color: white;
+}
+
+.btn-ir-pedido:hover {
+
+    transform: scale(1.05);
+}
+
+
+
 
 /* ======================================== */
 /* FOOTER */

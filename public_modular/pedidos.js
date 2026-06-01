@@ -45,16 +45,19 @@ window.addEventListener('click', () => {
     habilitarAudio();
 });
 
+
 // ======================================================
 // 🔔 SONIDO NUEVO PEDIDO
 // ======================================================
 
 function sonarNuevoPedido() {
 
-    // Evita reproducción sin interacción usuario
     if (!audioHabilitado) return;
 
-    const audio = new Audio('/sounds/caja_registradora.mp3');
+    const audio =
+        new Audio(
+            '/sounds/caja_registradora.mp3'
+        );
 
     audio.volume = 1;
 
@@ -67,23 +70,26 @@ function sonarNuevoPedido() {
     });
 }
 
+
 // ======================================================
 // 🚨 SONIDO PEDIDOS CRÍTICOS
 // ======================================================
 
 function sonarCriticos() {
 
-    // Evita autoplay bloqueado
     if (!audioHabilitado) return;
 
     const ahora = Date.now();
 
-    // Cooldown 5 minutos
-    if (ahora - ultimaAlertaCritica < 300000) return;
+    if (
+        ahora - ultimaAlertaCritica
+        < 300000
+    ) return;
 
     ultimaAlertaCritica = ahora;
 
-    const audio = new Audio('/sounds/warning.mp3');
+    const audio =
+        new Audio('/sounds/warning.mp3');
 
     audio.volume = 1;
 
@@ -101,80 +107,124 @@ function sonarCriticos() {
 // 📡 OBTENER PEDIDOS
 // ======================================================
 
+// inicio de modificacion
+
 async function obtenerPedidos() {
 
     if (cargandoPedidos) return;
+
     cargandoPedidos = true;
 
     try {
 
-        const res = await fetch('/api/pedidos');
-        const data = await res.json();
+        const res =
+            await fetch('/api/pedidos');
 
-        const nuevosIds = new Set(data.map(p => p.id));
+        if (!res.ok) {
+
+            throw new Error(
+                "Error obteniendo pedidos"
+            );
+        }
+
+        const data =
+            await res.json();
+
+        const nuevosIds =
+            new Set(
+                data.map(p => p.id)
+            );
+
+        // ======================================================
+        // 🔔 NUEVOS PEDIDOS
+        // ======================================================
 
         if (!primeraCarga) {
+
             data.forEach(p => {
+
                 if (!idsAnteriores.has(p.id)) {
+
                     sonarNuevoPedido();
                 }
             });
         }
 
-        idsAnteriores = nuevosIds;
-        primeraCarga = false;
+        idsAnteriores =
+            nuevosIds;
 
-        pedidos = data;
+        primeraCarga =
+            false;
 
-        ultimaActualizacion = new Date();
-        sistemaActivo = true;
+        pedidos =
+            data;
 
-        // Render principal del tablero
-renderPedidos();
+        ultimaActualizacion =
+            new Date();
 
-// Actualiza métricas y reloj UI
-actualizarUI();
+        sistemaActivo =
+            true;
 
-// Refresca inmediatamente panel críticos
-// para evitar retrasos visuales
-verificarDemorasAutomaticas();
+        renderPedidos();
 
-    } catch (e) {
+        actualizarUI();
+
+        verificarDemorasAutomaticas();
+
+        detectarCuelloBotella();
+
+    }
+
+    catch (e) {
+
+        // esto es una modificacion
+
+        console.error(
+            "❌ ERROR obtenerPedidos:",
+            e
+        );
 
         sistemaActivo = false;
 
-        const el = document.getElementById('estadoSistema');
-        if (el) el.innerText = "🔴 Error conexión";
+        const el =
+            document.getElementById(
+                'estadoSistema'
+            );
 
-    } finally {
-        cargandoPedidos = false;
+        if (el) {
+
+            el.innerText =
+                "🔴 Error conexión";
+        }
+    }
+
+    finally {
+
+        cargandoPedidos =
+            false;
     }
 }
 
+// hasta aqui fue modificado
+
 
 // ======================================================
-// ⏱ UTILIDAD TIEMPO
-// ======================================================
-
-// ======================================================
-// ⏱ CALCULAR MINUTOS (FIX SQLITE)
+// ⏱ CALCULAR MINUTOS
 // ======================================================
 
 function calcularMinutos(fecha) {
 
     if (!fecha) return 0;
 
-    // SQLite devuelve:
-    // YYYY-MM-DD HH:mm:ss
-    // Algunos navegadores no parsean correctamente.
-    // Se normaliza a formato ISO.
     const fechaNormalizada =
         fecha.replace(' ', 'T');
 
-    const fechaPedido = new Date(fechaNormalizada);
+    const fechaPedido =
+        new Date(fechaNormalizada);
 
-    // Protección invalid date
-    if (isNaN(fechaPedido.getTime())) {
+    if (
+        isNaN(fechaPedido.getTime())
+    ) {
 
         console.warn(
             "⚠️ Fecha inválida:",
@@ -185,12 +235,16 @@ function calcularMinutos(fecha) {
     }
 
     return Math.floor(
-        (Date.now() - fechaPedido.getTime()) / 60000
+        (
+            Date.now()
+            - fechaPedido.getTime()
+        ) / 60000
     );
-}   
+}
+
 
 // ======================================================
-// ⏱ CALCULAR SEGUNDOS (FIX SQLITE)
+// ⏱ CALCULAR SEGUNDOS
 // ======================================================
 
 function calcularSegundos(fecha) {
@@ -200,9 +254,12 @@ function calcularSegundos(fecha) {
     const fechaNormalizada =
         fecha.replace(' ', 'T');
 
-    const fechaPedido = new Date(fechaNormalizada);
+    const fechaPedido =
+        new Date(fechaNormalizada);
 
-    if (isNaN(fechaPedido.getTime())) {
+    if (
+        isNaN(fechaPedido.getTime())
+    ) {
 
         console.warn(
             "⚠️ Fecha inválida:",
@@ -213,16 +270,118 @@ function calcularSegundos(fecha) {
     }
 
     return Math.floor(
-        (Date.now() - fechaPedido.getTime()) / 1000
+        (
+            Date.now()
+            - fechaPedido.getTime()
+        ) / 1000
     );
 }
 
-// ======================================================
-// 📊 MOTOR INTELIGENTE
-// ======================================================
 
 // ======================================================
-// 🚨 SLA OPERATIVO POR ETAPA
+// 🧠 PRIORIDAD OPERACIONAL
+// ======================================================
+
+function calcularPrioridadOperacional(p) {
+
+    const minutosTotal =
+        calcularMinutos(
+            p.created_at
+        );
+
+    let minutosEtapa = 0;
+
+    if (p.estado === "pendiente") {
+
+        minutosEtapa =
+            calcularMinutos(
+                p.pendiente_at
+                || p.created_at
+            );
+    }
+
+    else if (
+        p.estado === "preparando"
+    ) {
+
+        minutosEtapa =
+            calcularMinutos(
+                p.preparando_at
+                || p.created_at
+            );
+    }
+
+    else if (
+        p.estado === "listo"
+    ) {
+
+        minutosEtapa =
+            calcularMinutos(
+                p.listo_at
+                || p.created_at
+            );
+    }
+
+    if (
+        minutosTotal >= 25
+        ||
+        (
+            p.estado === "listo"
+            &&
+            minutosEtapa >= 10
+        )
+    ) {
+
+        return {
+            nivel: "critica",
+            texto: "🚨 PRIORIDAD CRÍTICA",
+            clase: "prioridad-critica"
+        };
+    }
+
+    if (
+        minutosTotal >= 15
+        ||
+        (
+            p.estado === "preparando"
+            &&
+            minutosEtapa >= 10
+        )
+    ) {
+
+        return {
+            nivel: "urgente",
+            texto: "⚠ PRIORIDAD URGENTE",
+            clase: "prioridad-urgente"
+        };
+    }
+
+    if (
+        p.estado === "pendiente"
+        &&
+        minutosEtapa >= 5
+    ) {
+
+        return {
+            nivel: "alta",
+            texto: "🟡 PRIORIDAD ALTA",
+            clase: "prioridad-alta"
+        };
+    }
+
+    return {
+
+        nivel: "normal",
+
+        texto: "🟢 PRIORIDAD NORMAL",
+
+        clase: "prioridad-normal"
+    };
+}
+
+
+// ======================================================
+// 🚨 SLA ETAPA
 // ======================================================
 
 function obtenerAlertaEtapa(p) {
@@ -233,60 +392,61 @@ function obtenerAlertaEtapa(p) {
 
     let clase = "";
 
-    // ======================================================
-    // 🟠 PENDIENTE
-    // ======================================================
-
     if (p.estado === "pendiente") {
 
-        minutosEtapa = calcularMinutos(
-            p.pendiente_at || p.created_at
-        );
+        minutosEtapa =
+            calcularMinutos(
+                p.pendiente_at
+                || p.created_at
+            );
 
         if (minutosEtapa >= 5) {
 
             alerta =
                 "⚠ Caja no liberó pedido";
 
-            clase = "sla-alerta";
+            clase =
+                "sla-alerta";
         }
     }
 
-    // ======================================================
-    // 🔵 PREPARANDO
-    // ======================================================
+    else if (
+        p.estado === "preparando"
+    ) {
 
-    else if (p.estado === "preparando") {
-
-        minutosEtapa = calcularMinutos(
-            p.preparando_at || p.created_at
-        );
+        minutosEtapa =
+            calcularMinutos(
+                p.preparando_at
+                || p.created_at
+            );
 
         if (minutosEtapa >= 5) {
 
             alerta =
                 "⚠ Cocina demorando preparación";
 
-            clase = "sla-alerta";
+            clase =
+                "sla-alerta";
         }
     }
 
-    // ======================================================
-    // 🟢 LISTO
-    // ======================================================
+    else if (
+        p.estado === "listo"
+    ) {
 
-    else if (p.estado === "listo") {
-
-        minutosEtapa = calcularMinutos(
-            p.listo_at || p.created_at
-        );
+        minutosEtapa =
+            calcularMinutos(
+                p.listo_at
+                || p.created_at
+            );
 
         if (minutosEtapa >= 5) {
 
             alerta =
                 "⚠ Delivery no despachó";
 
-            clase = "sla-alerta";
+            clase =
+                "sla-alerta";
         }
     }
 
@@ -298,173 +458,602 @@ function obtenerAlertaEtapa(p) {
 }
 
 
+// ======================================================
+// 🧠 CARGA COCINA
+// ======================================================
+
 function calcularCargaCocina() {
 
-    const pendientes = pedidos.filter(p => p.estado === "pendiente").length;
-    const preparando = pedidos.filter(p => p.estado === "preparando").length;
+    const pendientes =
+        pedidos.filter(
+            p => p.estado === "pendiente"
+        ).length;
 
-    return pendientes + (preparando * 2);
+    const preparando =
+        pedidos.filter(
+            p => p.estado === "preparando"
+        ).length;
+
+    return pendientes
+        + (preparando * 2);
 }
+
+
+// ======================================================
+// ⏱ ESTIMAR DEMORA
+// ======================================================
 
 function estimarDemoraPromedio() {
 
-    const hora = new Date().getHours();
+    const hora =
+        new Date().getHours();
 
-    if (hora >= 12 && hora <= 14) return 18;
-    if (hora >= 20 && hora <= 22) return 22;
+    if (
+        hora >= 12
+        &&
+        hora <= 14
+    ) return 18;
+
+    if (
+        hora >= 20
+        &&
+        hora <= 22
+    ) return 22;
 
     return 10;
 }
 
 
 // ======================================================
-// 🎨 RENDER PEDIDOS (TABLERO)
+// 🚨 PEDIDOS CRÍTICOS
 // ======================================================
 
-function renderPedidos() {
+function obtenerPedidosCriticos() {
 
-    const colPendientes = document.getElementById('colPendientes');
-    const colPreparando = document.getElementById('colPreparando');
-    const colListos = document.getElementById('colListos');
+    return pedidos.filter(p => {
 
-    if (!colPendientes || !colPreparando || !colListos) return;
+        if (
+            p.estado === "entregado"
+            ||
+            p.estado === "cancelado"
+        ) {
 
-    colPendientes.innerHTML = "";
-    colPreparando.innerHTML = "";
-    colListos.innerHTML = "";
+            return false;
+        }
 
-    let filtrados = [...pedidos];
-
-    if (filtroEstado !== "todos") {
-        filtrados = filtrados.filter(p => p.estado === filtroEstado);
-    }
-
-    filtrados.forEach(p => {
-
-        // 🔴 REGLA FIJA: fuera del tablero
-        if (p.estado === "entregado" || p.estado === "cancelado") return;
-
-        const card = document.createElement('div');
-
-      //======================================================
-      // 🚨 SLA ETAPA ACTUAL
-      //======================================================
-
-        const slaInfo = obtenerAlertaEtapa(p);
-
-
-        const minutos = calcularMinutos(p.created_at);
-
-        const demoraEstimada = estimarDemoraPromedio();
-
-        // ======================================================
-        // ⏱ SLA POR ETAPA (NIVEL 1 - SOLO VISUAL)
-        // ======================================================
-
-let minutosEtapa = 0;
-let etiquetaEtapa = "⏳ Sin etapa";
-
-// ------------------------------------------------------
-// 🟠 PENDIENTE
-// ------------------------------------------------------
-if (p.estado === "pendiente") {
-
-    minutosEtapa = calcularMinutos(p.pendiente_at || p.created_at);
-
-    etiquetaEtapa = `🟠 Pendiente ${minutosEtapa}m`;
-}
-
-// ------------------------------------------------------
-// 🔵 PREPARANDO
-// ------------------------------------------------------
-else if (p.estado === "preparando") {
-
-    minutosEtapa = calcularMinutos(p.preparando_at || p.created_at);
-
-    etiquetaEtapa = `🔵 Preparando ${minutosEtapa}m`;
-}
-
-// ------------------------------------------------------
-// 🟢 LISTO
-// ------------------------------------------------------
-else if (p.estado === "listo") {
-
-    minutosEtapa = calcularMinutos(p.listo_at || p.created_at);
-
-    etiquetaEtapa = `🟢 Listo ${minutosEtapa}m`;
-}
-
-        const esCritico = minutos >= 15;
-        const esAltoRiesgo = minutos >= demoraEstimada;
-
-        card.className = `card estado-${p.estado}`;
-
-        if (esCritico) card.classList.add("critico");
-        else if (esAltoRiesgo) card.classList.add("prioridad");
-
-        card.innerHTML = `
-            <h3>🍕 Pedido #${p.id}</h3>
-
-            <p><b>Cliente:</b> ${p.cliente}</p>
-            <p><b>Detalle:</b> ${p.detalle}</p>
-            <p><b>Total:</b> $${p.total}</p>
-
-            <p><b>Estado:</b> ${p.estado}</p>
-
-<p><b>Etapa:</b> ${etiquetaEtapa}</p>
-
-<p><b>Tiempo:</b> ${minutos} min</p>
-
-<p><b>Predicción:</b> ~${demoraEstimada} min</p>
-
-${slaInfo.alerta ? `
-
-    <div class="${slaInfo.clase}">
-
-        ${slaInfo.alerta}
-
-    </div>
-
-` : ''}
-
-            <div class="acciones">
-                <button onclick="cambiarEstado(${p.id}, 'preparando')">👨‍🍳</button>
-                <button onclick="cambiarEstado(${p.id}, 'listo')">✅</button>
-                <button onclick="cambiarEstado(${p.id}, 'entregado')">🚚</button>
-                <button onclick="cambiarEstado(${p.id}, 'cancelado')">❌</button>
-            </div>
-        `;
-
-        if (p.estado === "pendiente") colPendientes.appendChild(card);
-        else if (p.estado === "preparando") colPreparando.appendChild(card);
-        else colListos.appendChild(card);
+        return true;
     });
 }
 
 
 // ======================================================
-// 🔄 CAMBIO DE ESTADO
+// 🎨 PANEL CRÍTICOS
 // ======================================================
 
-async function cambiarEstado(id, estado) {
+function renderPanelCriticos(criticos) {
 
-    if (actualizandoEstado) return;
-    actualizandoEstado = true;
+    const panel =
+        document.getElementById(
+            "panelCriticos"
+        );
+
+    const grid =
+        document.getElementById(
+            "gridCriticos"
+        );
+
+    const template =
+        document.getElementById(
+            "templateCritico"
+        );
+
+    if (
+        !panel
+        || !grid
+        || !template
+    ) return;
+
+    if (criticos.length === 0) {
+
+        grid.innerHTML = "";
+
+        panel.classList.add(
+            "oculto"
+        );
+
+        return;
+    }
+
+    panel.classList.remove(
+        "oculto"
+    );
+
+    // esto es una modificacion
+
+    grid.replaceChildren();
+
+    criticos.forEach(p => {
+
+        const clone =
+            template.content
+                .cloneNode(true);
+
+        const item =
+            clone.querySelector(
+                ".critico-item"
+            );
+
+        const titulo =
+            clone.querySelector(
+                ".critico-titulo"
+            );
+
+        const cliente =
+            clone.querySelector(
+                ".critico-cliente"
+            );
+
+        const estado =
+            clone.querySelector(
+                ".critico-estado"
+            );
+
+        const tiempo =
+            clone.querySelector(
+                ".critico-tiempo"
+            );
+
+        const alerta =
+            clone.querySelector(
+                ".critico-alerta"
+            );
+
+        const btn =
+            clone.querySelector(
+                ".btn-ir-pedido"
+            );
+
+        item.classList.add(
+            `critico-${p.estado}`
+        );
+
+        titulo.textContent =
+            `🍕 Pedido #${p.id}`;
+
+        cliente.textContent =
+            `👤 ${p.cliente}`;
+
+        estado.textContent =
+            `📌 ${p.estado}`;
+
+        tiempo.textContent =
+            `⏱ Total: ${
+                calcularMinutos(
+                    p.created_at
+                )
+            } min`;
+
+        // esto es una modificacion
+
+        const prioridad =
+            calcularPrioridadOperacional(p);
+
+        const prioridadEl =
+            document.createElement("div");
+
+        prioridadEl.className =
+            prioridad.clase;
+
+        prioridadEl.textContent =
+            prioridad.texto;
+
+        item.appendChild(
+            prioridadEl
+        );
+
+        const slaInfo =
+            obtenerAlertaEtapa(p);
+
+        // inicio de modificacion
+
+        if (slaInfo.alerta) {
+
+            const alertaBox =
+                document.createElement("div");
+
+            alertaBox.className =
+                slaInfo.clase;
+
+            alertaBox.textContent =
+                slaInfo.alerta;
+
+            const etapa =
+                document.createElement("small");
+
+            etapa.textContent =
+                `⏱ Etapa: ${slaInfo.minutosEtapa} min`;
+
+            alerta.appendChild(
+                alertaBox
+            );
+
+            alerta.appendChild(
+                etapa
+            );
+        }
+
+        // hasta aqui fue modificado
+
+        btn.onclick = () => {
+            irAPedido(p.id);
+        };
+
+        grid.appendChild(clone);
+    });
+}
+
+
+// ======================================================
+// 🎨 RENDER TABLERO
+// ======================================================
+
+function renderPedidos() {
+
+    const colPendientes =
+        document.getElementById(
+            'colPendientes'
+        );
+
+    const colPreparando =
+        document.getElementById(
+            'colPreparando'
+        );
+
+    const colListos =
+        document.getElementById(
+            'colListos'
+        );
+
+    if (
+        !colPendientes
+        || !colPreparando
+        || !colListos
+    ) return;
+
+    // esto es una modificacion
+
+    colPendientes.replaceChildren();
+    colPreparando.replaceChildren();
+    colListos.replaceChildren();
+
+    let filtrados = [...pedidos];
+
+    if (
+        filtroEstado !== "todos"
+    ) {
+
+        filtrados =
+            filtrados.filter(
+                p =>
+                    p.estado
+                    === filtroEstado
+            );
+    }
+
+    filtrados.forEach(p => {
+
+        if (
+            p.estado === "entregado"
+            ||
+            p.estado === "cancelado"
+        ) return;
+
+        // inicio de modificacion
+
+        const card =
+            document.createElement("div");
+
+        card.className =
+            `card estado-${p.estado}`;
+
+        card.id =
+            `pedido-${p.id}`;
+
+        const minutos =
+            calcularMinutos(
+                p.created_at
+            );
+
+        const demoraEstimada =
+            estimarDemoraPromedio();
+
+        const prioridad =
+            calcularPrioridadOperacional(p);
+
+        const slaInfo =
+            obtenerAlertaEtapa(p);
+
+        if (minutos >= 15) {
+
+            card.classList.add(
+                "critico"
+            );
+        }
+
+        else if (
+            minutos >= demoraEstimada
+        ) {
+
+            card.classList.add(
+                "prioridad"
+            );
+        }
+
+        const titulo =
+            document.createElement("h3");
+
+        titulo.textContent =
+            `🍕 Pedido #${p.id}`;
+
+        card.appendChild(titulo);
+
+        const cliente =
+            document.createElement("p");
+
+        cliente.textContent =
+            `Cliente: ${p.cliente}`;
+
+        card.appendChild(cliente);
+
+        const detalle =
+            document.createElement("p");
+
+        detalle.textContent =
+            `Detalle: ${p.detalle}`;
+
+        card.appendChild(detalle);
+
+        const total =
+            document.createElement("p");
+
+        total.textContent =
+            `Total: $${p.total}`;
+
+        card.appendChild(total);
+
+        const estado =
+            document.createElement("p");
+
+        estado.textContent =
+            `Estado: ${p.estado}`;
+
+        card.appendChild(estado);
+
+        const tiempo =
+            document.createElement("p");
+
+        tiempo.textContent =
+            `Tiempo: ${minutos} min`;
+
+        card.appendChild(tiempo);
+
+        const prioridadEl =
+            document.createElement("p");
+
+        prioridadEl.className =
+            prioridad.clase;
+
+        prioridadEl.textContent =
+            prioridad.texto;
+
+        card.appendChild(
+            prioridadEl
+        );
+
+        if (slaInfo.alerta) {
+
+            const alerta =
+                document.createElement("div");
+
+            alerta.className =
+                slaInfo.clase;
+
+            alerta.textContent =
+                slaInfo.alerta;
+
+            card.appendChild(
+                alerta
+            );
+        }
+
+        const acciones =
+            document.createElement("div");
+
+        acciones.className =
+            "acciones";
+
+        const estados = [
+
+            {
+                icono: "👨‍🍳",
+                estado: "preparando"
+            },
+
+            {
+                icono: "✅",
+                estado: "listo"
+            },
+
+            {
+                icono: "🚚",
+                estado: "entregado"
+            },
+
+            {
+                icono: "❌",
+                estado: "cancelado"
+            }
+        ];
+
+        estados.forEach(item => {
+
+            const btn =
+                document.createElement(
+                    "button"
+                );
+
+// ======================================================
+// 🎨 ICONO VISUAL DEL BOTÓN
+// Se muestra dentro del botón.
+// Ejemplo:
+// 👨‍🍳
+// ✅
+// 🚚
+// ❌
+// ======================================================
+
+btn.textContent =
+    item.icono;
+
+
+// ======================================================
+// 🧠 TOOLTIP NATIVO DEL NAVEGADOR
+// Aparece al dejar el mouse encima.
+// Funciona como fallback universal.
+//
+// Ejemplo:
+// "Cambiar a preparando"
+//
+// IMPORTANTE:
+// el delay lo controla el navegador.
+// ======================================================
+
+//btn.title =
+//    `Cambiar a ${item.estado}`;
+
+
+
+// ======================================================
+// ⚡ TOOLTIP PERSONALIZADO CSS
+// Se usa junto con:
+//
+// .acciones button::after
+//
+// Permite:
+// ✅ aparición instantánea
+// ✅ estilos propios
+// ✅ mejor UX operacional
+//
+// El CSS leerá:
+// attr(data-tooltip)
+// ======================================================
+
+btn.dataset.tooltip =
+    `Cambiar a ${item.estado}`;
+
+
+
+// ======================================================
+// ♿ ACCESIBILIDAD
+// Mejora soporte para:
+//
+// ✅ lectores de pantalla
+// ✅ accesibilidad web
+// ✅ navegación asistida
+// ✅ compatibilidad futura
+//
+// No afecta visualmente.
+// ======================================================
+
+btn.setAttribute(
+    "aria-label",
+    `Cambiar a ${item.estado}`
+);
+
+            btn.onclick = () => {
+
+                cambiarEstado(
+                    p.id,
+                    item.estado
+                );
+            };
+
+            acciones.appendChild(btn);
+        });
+
+        card.appendChild(acciones);
+
+        // hasta aqui fue modificado
+
+        if (
+            p.estado === "pendiente"
+        ) {
+
+            colPendientes
+                .appendChild(card);
+        }
+
+        else if (
+            p.estado === "preparando"
+        ) {
+
+            colPreparando
+                .appendChild(card);
+        }
+
+        else {
+
+            colListos
+                .appendChild(card);
+        }
+    });
+}
+
+
+// ======================================================
+// 🔄 CAMBIAR ESTADO
+// ======================================================
+
+async function cambiarEstado(
+    id,
+    estado
+) {
+
+    if (
+        actualizandoEstado
+    ) return;
+
+    actualizandoEstado =
+        true;
 
     try {
 
-        await fetch(`/api/pedidos/${id}/estado`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ estado })
-        });
+        await fetch(
+            `/api/pedidos/${id}/estado`,
+            {
+                method: 'PATCH',
+
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
+
+                body: JSON.stringify({
+                    estado
+                })
+            }
+        );
 
         await obtenerPedidos();
+    }
 
-    } finally {
-        actualizandoEstado = false;
+    finally {
+
+        actualizandoEstado =
+            false;
     }
 }
+
 
 // ======================================================
 // 📄 DETALLE PEDIDO
@@ -474,13 +1063,20 @@ async function verDetallePedido(id) {
 
     try {
 
-        const res = await fetch(`/api/pedidos/${id}`);
+        const res =
+            await fetch(
+                `/api/pedidos/${id}`
+            );
 
         if (!res.ok) {
-            throw new Error("Error obteniendo pedido");
+
+            throw new Error(
+                "Error obteniendo pedido"
+            );
         }
 
-        const p = await res.json();
+        const p =
+            await res.json();
 
         alert(`
 
@@ -499,12 +1095,17 @@ async function verDetallePedido(id) {
 🔄 Actualizado: ${p.updated_at || '-'}
 
 📝 Observaciones: ${p.observaciones || '-'}
-        `);
 
-    } catch (err) {
+        `);
+    }
+
+    catch (err) {
 
         console.error(err);
-        alert("❌ Error obteniendo detalle");
+
+        alert(
+            "❌ Error obteniendo detalle"
+        );
     }
 }
 
@@ -514,315 +1115,527 @@ async function verDetallePedido(id) {
 // ======================================================
 
 function setFiltro(estado) {
-    filtroEstado = estado;
+
+    filtroEstado =
+        estado;
+
     renderPedidos();
 }
 
 
 // ======================================================
-// 📋 HISTORIAL (ESTABLE)
+// 📋 HISTORIAL
 // ======================================================
 
 async function abrirHistorial() {
 
     try {
 
-        const res = await fetch('/api/pedidos/historial');
-        const data = await res.json();
+        const res =
+            await fetch(
+                '/api/pedidos/historial'
+            );
 
-        const modal = document.getElementById('modalHistorial');
+        const data =
+            await res.json();
 
-        if (!modal) {
-            console.log(data);
-            return;
-        }
+        const modal =
+            document.getElementById(
+                'modalHistorial'
+            );
 
-        const container = document.getElementById('contenidoHistorial');
+        if (!modal) return;
+
+        const container =
+            document.getElementById(
+                'contenidoHistorial'
+            );
+
         if (!container) return;
 
-        modal.style.display = 'flex';
-        container.innerHTML = "";
+        modal.style.display =
+            'flex';
+
+        // esto es una modificacion
+
+        container.replaceChildren();
 
         data.forEach(p => {
 
-            const div = document.createElement('div');
-            div.className = 'historial-item';
+            // inicio de modificacion
 
-            div.innerHTML = `
-                <div>
-                    <b>🍕 Pedido #${p.id}</b>
-                    <span>${p.estado}</span>
-                </div>
+            const div =
+                document.createElement(
+                    'div'
+                );
 
-                <p><b>Cliente:</b> ${p.cliente}</p>
-                <p><b>Total:</b> $${p.total}</p>
-                <p><b>Actualizado:</b> ${p.updated_at || '-'}</p>
+            div.className =
+                'historial-item';
 
-                <button onclick="verDetallePedido(${p.id})">
-                    👁 Ver detalle
-                </button>
+            const titulo =
+                document.createElement(
+                    'div'
+                );
 
-                <hr>
-            `;
+            titulo.textContent =
+                `🍕 Pedido #${p.id} - ${p.estado}`;
+
+            div.appendChild(titulo);
+
+            const cliente =
+                document.createElement(
+                    'p'
+                );
+
+            cliente.textContent =
+                `Cliente: ${p.cliente}`;
+
+            div.appendChild(cliente);
+
+            const total =
+                document.createElement(
+                    'p'
+                );
+
+            total.textContent =
+                `Total: $${p.total}`;
+
+            div.appendChild(total);
+
+            const actualizado =
+                document.createElement(
+                    'p'
+                );
+
+            actualizado.textContent =
+                `Actualizado: ${
+                    p.updated_at || '-'
+                }`;
+
+            div.appendChild(
+                actualizado
+            );
+
+            const btn =
+                document.createElement(
+                    'button'
+                );
+
+            btn.textContent =
+                '👁 Ver detalle';
+
+            btn.onclick = () => {
+                verDetallePedido(p.id);
+            };
+
+            div.appendChild(btn);
+
+            const hr =
+                document.createElement(
+                    'hr'
+                );
+
+            div.appendChild(hr);
 
             container.appendChild(div);
-        });
 
-    } catch (err) {
+            // hasta aqui fue modificado
+        });
+    }
+
+    catch (err) {
+
         console.error(err);
     }
 }
 
 
 // ======================================================
-// 🚨 DEMORAS AUTOMÁTICAS
+// 🚨 DEMORAS
 // ======================================================
 
 function verificarDemorasAutomaticas() {
 
-    const ahora = Date.now();
+    const ahora =
+        Date.now();
 
-    // ======================================================
-// 🚨 PEDIDOS CRÍTICOS MULTIESTADO
-// ======================================================
+    const criticos =
+        obtenerPedidosCriticos();
 
-const criticos = pedidos.filter(p => {
+    renderPanelCriticos(
+        criticos
+    );
 
-    if (!p.created_at) return false;
-
-    const minutos = calcularMinutos(p.created_at);
-
-    // Excluye pedidos finalizados
-    if (
-        p.estado === "entregado" ||
-        p.estado === "cancelado"
-    ) {
-        return false;
-    }
-
-    // Crítico por tiempo total operativo
-    return minutos >= 15;
-});
-
-    // ======================================================
-    // 🚨 PANEL VISUAL CRÍTICOS
-    // ======================================================
-
-    const panel = document.getElementById("panelCriticos");
-
-if (!panel) return;
-
-if (criticos.length === 0) {
-
-    panel.classList.add("oculto");
+    if (criticos.length === 0) {
     return;
 }
 
-panel.classList.remove("oculto");
+    if (
+        ahora - ultimoSonidoDemora
+        < 300000
+    ) return;
 
-panel.innerHTML = `
-    <h3>🚨 Pedidos críticos (${criticos.length})</h3>
-
-    ${criticos.map(p => {
-
-        const slaInfo =
-            obtenerAlertaEtapa(p);
-
-        return `
-
-        <div class="critico-item">
-
-            <b>🍕 Pedido #${p.id}</b><br>
-
-            👤 ${p.cliente}<br>
-
-            📌 Estado: ${p.estado}<br>
-
-            ⏱ Total:
-            ${calcularMinutos(p.created_at)} min<br>
-
-            ${
-                slaInfo.alerta
-                ? `
-                    <div class="${slaInfo.clase}">
-                        ${slaInfo.alerta}
-                    </div>
-
-                    <small>
-                        ⏱ Etapa:
-                        ${slaInfo.minutosEtapa} min
-                    </small>
-                `
-                : ''
-            }
-
-        </div>
-
-        `;
-    }).join('')}
-`;
-    // ======================================================
-    // 🔊 ALERTA SONORA CADA 5 MIN
-    // ======================================================
-
-    if (ahora - ultimoSonidoDemora < 300000) return;
-
-    ultimoSonidoDemora = ahora;
+    ultimoSonidoDemora =
+        ahora;
 
     sonarCriticos();
 }
 
 
 // ======================================================
-// 🟢 UI SISTEMA
+// 🧠 CUELLO BOTELLA
+// ======================================================
+
+function detectarCuelloBotella() {
+
+    const panel =
+        document.getElementById(
+            "panelCuelloBotella"
+        );
+
+    if (!panel) return;
+
+    const texto =
+        document.getElementById(
+            "textoCuelloBotella"
+        );
+
+    if (!texto) return;
+
+    const pendientes =
+        pedidos.filter(
+            p => p.estado === "pendiente"
+        ).length;
+
+    const preparando =
+        pedidos.filter(
+            p => p.estado === "preparando"
+        ).length;
+
+    const listos =
+        pedidos.filter(
+            p => p.estado === "listo"
+        ).length;
+
+    let mensaje = "";
+
+    let clase = "";
+
+    if (listos >= 1) {
+
+        mensaje =
+            `🔴 DELIVERY DEMORADO:
+            ${listos} pedidos esperando salida`;
+
+        clase =
+            "cuello-rojo";
+    }
+
+    else if (
+        preparando >= 1
+    ) {
+
+        mensaje =
+            `🟠 COCINA SATURADA:
+            ${preparando} pedidos en preparación`;
+
+        clase =
+            "cuello-naranja";
+    }
+
+    else if (
+        pendientes >= 1
+    ) {
+
+        mensaje =
+            `🟡 DEMORA EN TOMA DE PEDIDOS:
+            ${pendientes} pedidos pendientes`;
+
+        clase =
+            "cuello-amarillo";
+    }
+
+    else {
+
+        panel.className =
+            "panel-cuello oculto";
+
+        texto.textContent =
+            "";
+
+        return;
+    }
+
+    panel.className =
+        `panel-cuello ${clase}`;
+
+    texto.textContent =
+        mensaje;
+}
+
+
+// ======================================================
+// 🟢 UI
 // ======================================================
 
 function actualizarUI() {
 
-    const el = document.getElementById('estadoSistema');
+    const el =
+        document.getElementById(
+            'estadoSistema'
+        );
+
     if (!el) return;
 
     if (!ultimaActualizacion) {
-        el.innerText = "🟡 Conectando...";
+
+        el.innerText =
+            "🟡 Conectando...";
+
         return;
     }
 
-    const diff = Date.now() - new Date(ultimaActualizacion).getTime();
+    const diff =
+        Date.now()
+        - new Date(
+            ultimaActualizacion
+        ).getTime();
 
-    if (isNaN(diff) || diff < 0) {
-        el.innerText = sistemaActivo
-            ? "🟢 Activo hace 0m 0s"
-            : "🔴 Sin conexión";
+    if (
+        isNaN(diff)
+        ||
+        diff < 0
+    ) {
+
+        el.innerText =
+            sistemaActivo
+                ? "🟢 Activo hace 0m 0s"
+                : "🔴 Sin conexión";
+
         return;
     }
 
-    const seg = Math.floor(diff / 1000);
-    const min = Math.floor(seg / 60);
-    const segRest = seg % 60;
+    const seg =
+        Math.floor(diff / 1000);
 
-    el.innerText = sistemaActivo
-        ? `🟢 Activo hace ${min}m ${segRest}s`
-        : `🔴 Sin conexión`;
+    const min =
+        Math.floor(seg / 60);
 
-    const pendientes = pedidos.filter(p => p.estado === "pendiente").length;
-    const preparando = pedidos.filter(p => p.estado === "preparando").length;
-    const listos = pedidos.filter(p => p.estado === "listo").length;
-    const entregados = pedidos.filter(p => p.estado === "entregado").length;
+    const segRest =
+        seg % 60;
 
-    const c1 = document.getElementById("contadorPendientes");
-    if (c1) c1.innerText = `📊 Pendientes: ${pendientes}`;
+    el.innerText =
+        sistemaActivo
+            ? `🟢 Activo hace ${min}m ${segRest}s`
+            : `🔴 Sin conexión`;
 
-    const c2 = document.getElementById("contadorExtra");
-    if (c2) c2.innerText = `👨‍🍳 Preparando: ${preparando} | ✅ Listos: ${listos} | 🚚 Entregados: ${entregados}`;
+    const pendientes =
+        pedidos.filter(
+            p => p.estado === "pendiente"
+        ).length;
 
-    const criticos = pedidos.filter(p => {
-        if (!p.created_at) return false;
-        return p.estado === "pendiente" && calcularMinutos(p.created_at) >= 15;
-    }).length;
+    const preparando =
+        pedidos.filter(
+            p => p.estado === "preparando"
+        ).length;
 
-    const c3 = document.getElementById("contadorCriticos");
-    if (c3) c3.innerText = `🚨 Críticos: ${criticos}`;
+    const listos =
+        pedidos.filter(
+            p => p.estado === "listo"
+        ).length;
+
+    const entregados =
+        pedidos.filter(
+            p => p.estado === "entregado"
+        ).length;
+
+    const criticos =
+        obtenerPedidosCriticos()
+            .length;
+
+    const c1 =
+        document.getElementById(
+            "contadorPendientes"
+        );
+
+    if (c1) {
+
+        c1.innerText =
+            `📊 Pendientes: ${pendientes}`;
+    }
+
+    const c2 =
+        document.getElementById(
+            "contadorExtra"
+        );
+
+    if (c2) {
+
+        c2.innerText =
+            `👨‍🍳 Preparando: ${preparando} | ✅ Listos: ${listos} | 🚚 Entregados: ${entregados}`;
+    }
+
+    const c3 =
+        document.getElementById(
+            "contadorCriticos"
+        );
+
+    if (c3) {
+
+        c3.innerText =
+            `🚨 Críticos: ${criticos}`;
+    }
 }
+
 
 // ======================================================
 // 🔁 INIT
 // ======================================================
 
 function iniciarPolling() {
-    obtenerPedidos();
-    setInterval(obtenerPedidos, REFRESH_MS);
 
-    setInterval(actualizarUI, 1000);
+    obtenerPedidos();
+
+    setInterval(
+        obtenerPedidos,
+        REFRESH_MS
+    );
+
+    setInterval(
+        actualizarUI,
+        1000
+    );
 }
 
-// ======================================================
-// 🌐 FIX GLOBAL SCOPE (ESTABLE)
-// ======================================================
-
-window.obtenerPedidos = obtenerPedidos;
-window.renderPedidos = renderPedidos;
-window.cambiarEstado = cambiarEstado;
-window.verDetallePedido = verDetallePedido;
-window.setFiltro = setFiltro;
-window.actualizarUI = actualizarUI;
-
-window.abrirHistorial = abrirHistorial;
-window.cerrarHistorial = cerrarHistorial;
-
-window.verificarDemorasAutomaticas = verificarDemorasAutomaticas;
-window.calcularCargaCocina = calcularCargaCocina;
-window.estimarDemoraPromedio = estimarDemoraPromedio;
-
-window.sonarNuevoPedido = sonarNuevoPedido;
-window.sonarCriticos = sonarCriticos;
-
-window.iniciarPolling = iniciarPolling;
-window.volver = volver;
 
 // ======================================================
-// 📋 FIX HISTORIAL MODAL (CRÍTICO)
+// 📋 HISTORIAL MODAL
 // ======================================================
 
 function cerrarHistorial() {
-    const modal = document.getElementById('modalHistorial');
+
+    const modal =
+        document.getElementById(
+            'modalHistorial'
+        );
+
     if (!modal) return;
-    modal.style.display = 'none';
-}
 
-// ======================================================
-// 🖱 PANEL CRÍTICOS DRAGGABLE
-// ======================================================
-
-const panelCriticos = document.getElementById("panelCriticos");
-
-let dragging = false;
-
-let offsetX = 0;
-let offsetY = 0;
-
-// Protege el sistema si el panel no existe
-if (panelCriticos) {
-
-    panelCriticos.addEventListener("mousedown", (e) => {
-
-        dragging = true;
-
-        offsetX = e.clientX - panelCriticos.offsetLeft;
-        offsetY = e.clientY - panelCriticos.offsetTop;
-    });
-
-    document.addEventListener("mousemove", (e) => {
-
-        if (!dragging) return;
-
-        panelCriticos.style.left = (e.clientX - offsetX) + "px";
-        panelCriticos.style.top = (e.clientY - offsetY) + "px";
-
-        // Desactiva posicionamiento right
-        // al mover manualmente el panel
-        panelCriticos.style.right = "auto";
-    });
-
-    document.addEventListener("mouseup", () => {
-
-        dragging = false;
-    });
+    modal.style.display =
+        'none';
 }
 
 
-
-
-
-
 // ======================================================
-// 🔙 VOLVER AL DASHBOARD
+// 🔙 VOLVER
 // ======================================================
 
 function volver() {
-    window.location.href = "/dashboard.html";
+
+    window.location.href =
+        "/dashboard.html";
 }
 
+
+// ======================================================
+// 🎯 IR A PEDIDO
+// ======================================================
+
+function irAPedido(id) {
+
+    const elemento =
+        document.getElementById(
+            `pedido-${id}`
+        );
+
+    if (!elemento) return;
+
+    elemento.scrollIntoView({
+
+        behavior: "smooth",
+
+        block: "center"
+    });
+
+    elemento.classList.add(
+        "flash-pedido"
+    );
+
+    setTimeout(() => {
+
+        elemento.classList.remove(
+            "flash-pedido"
+        );
+
+    }, 3000);
+}
+
+
+// ======================================================
+// 🌐 GLOBAL
+// ======================================================
+
+window.obtenerPedidos =
+    obtenerPedidos;
+
+window.renderPedidos =
+    renderPedidos;
+
+window.cambiarEstado =
+    cambiarEstado;
+
+window.verDetallePedido =
+    verDetallePedido;
+
+window.setFiltro =
+    setFiltro;
+
+window.actualizarUI =
+    actualizarUI;
+
+window.abrirHistorial =
+    abrirHistorial;
+
+window.cerrarHistorial =
+    cerrarHistorial;
+
+window.verificarDemorasAutomaticas =
+    verificarDemorasAutomaticas;
+
+window.calcularCargaCocina =
+    calcularCargaCocina;
+
+window.estimarDemoraPromedio =
+    estimarDemoraPromedio;
+
+window.sonarNuevoPedido =
+    sonarNuevoPedido;
+
+window.sonarCriticos =
+    sonarCriticos;
+
+window.iniciarPolling =
+    iniciarPolling;
+
+window.volver =
+    volver;
+
+
+// ======================================================
+// ⏱ INTERVALOS
+// ======================================================
+
 setInterval(() => {
+
     verificarDemorasAutomaticas();
+
+    detectarCuelloBotella();
+
 }, 60000);
+
+
+// ======================================================
+// 🚀 START
+// ======================================================
+
 iniciarPolling();

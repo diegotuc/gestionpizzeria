@@ -85,6 +85,35 @@
 <!-- ALERTAS -->
 <!-- ===================================== -->
 
+<section class="panel-alertas-globales">
+
+    <div
+    id="panelCuelloBotella"
+    class="panel-cuello oculto"
+>
+
+    <strong id="textoCuelloBotella"></strong>
+
+</div>
+    
+   <div
+    id="panelCriticos"
+    class="panel-criticos oculto"
+>
+
+    <h3 id="tituloCriticos">
+        🚨 Pedidos críticos
+    </h3>
+
+    <div
+        id="gridCriticos"
+        class="criticos-grid"
+    ></div>
+
+</div>
+    
+</section>
+
 <div
     id="alertaCocina"
     class="alerta-cocina"
@@ -197,7 +226,6 @@
 
 </div>
 
-<div id="panelCriticos" class="panel-criticos oculto"></div>
 
 <footer class="footer-panel">
 
@@ -206,6 +234,38 @@
     </button>
 
 </footer>
+
+<!-- ===================================== -->
+<!-- TEMPLATE PANEL CRÍTICOS -->
+<!-- ===================================== -->
+
+<template id="templateCritico">
+
+    <div class="critico-item">
+
+        <div class="critico-header">
+
+            <b class="critico-titulo">
+                🍕 Pedido
+            </b>
+
+            <button class="btn-ir-pedido">
+                VER
+            </button>
+
+        </div>
+
+        <div class="critico-cliente"></div>
+
+        <div class="critico-estado"></div>
+
+        <div class="critico-tiempo"></div>
+
+        <div class="critico-alerta"></div>
+
+    </div>
+
+</template>
 
 <script src="pedidos.js"></script>
 
