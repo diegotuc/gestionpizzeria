@@ -3,21 +3,30 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<title>🍕 Cocina - Pedidos</title>
+    <title>🍕 Cocina - Pedidos</title>
 
-<link rel="stylesheet" href="pedidos.css">
+    <link
+        rel="stylesheet"
+        href="pedidos.css"
+    >
 
 </head>
 
 <body>
 
+<!-- ===================================== -->
+<!-- TOPBAR -->
+<!-- ===================================== -->
+
 <header class="topbar">
 
     <div>
 
-        <h1>🍕 Panel de Cocina</h1>
+        <h1>
+            🍕 Panel de Cocina
+        </h1>
 
         <div id="estadoSistema">
             🟡 Conectando...
@@ -27,37 +36,53 @@
 
     <div class="acciones-topbar">
 
-        <button onclick="obtenerPedidos()">
-            🔄 Actualizar
-        </button>
+    <button onclick="obtenerPedidos()">
+        🔄 Actualizar
+    </button>
 
-        <button onclick="abrirHistorial()">
-            📋 Historial
-        </button>
+    <button onclick="abrirHistorial()">
+        📋 Historial
+    </button>
 
-        <button onclick="setFiltro('todos')">
-            Todos
-        </button>
+    <button
+        data-filtro="todos"
+        onclick="setFiltro('todos')"
+    >
+        Todos
+    </button>
 
-        <button onclick="setFiltro('pendiente')">
-            Pendientes
-        </button>
+    <button
+        data-filtro="pendiente"
+        onclick="setFiltro('pendiente')"
+    >
+        Pendientes
+    </button>
 
-        <button onclick="setFiltro('preparando')">
-            Preparando
-        </button>
+    <button
+        data-filtro="preparando"
+        onclick="setFiltro('preparando')"
+    >
+        Preparando
+    </button>
 
-        <button onclick="setFiltro('listo')">
-            Listos
-        </button>
+    <button
+        data-filtro="listo"
+        onclick="setFiltro('listo')"
+    >
+        Listos
+    </button>
 
-        <button onclick="setFiltro('entregado')">
-            Entregados
-        </button>
+    <button
+        data-filtro="entregado"
+        onclick="setFiltro('entregado')"
+    >
+        Entregados
+    </button>
 
-    </div>
+</div>
 
 </header>
+
 
 <!-- ===================================== -->
 <!-- MÉTRICAS -->
@@ -70,9 +95,13 @@
     </div>
 
     <div id="contadorExtra">
+
         👨‍🍳 Preparando: 0 |
+
         ✅ Listos: 0 |
+
         🚚 Entregados: 0
+
     </div>
 
     <div id="contadorCriticos">
@@ -81,38 +110,53 @@
 
 </section>
 
+
 <!-- ===================================== -->
-<!-- ALERTAS -->
+<!-- ALERTAS GLOBALES -->
 <!-- ===================================== -->
 
 <section class="panel-alertas-globales">
 
-    <div
-    id="panelCuelloBotella"
-    class="panel-cuello oculto"
->
-
-    <strong id="textoCuelloBotella"></strong>
-
-</div>
-    
-   <div
-    id="panelCriticos"
-    class="panel-criticos oculto"
->
-
-    <h3 id="tituloCriticos">
-        🚨 Pedidos críticos
-    </h3>
+    <!-- ================================= -->
+    <!-- CUELLO DE BOTELLA -->
+    <!-- ================================= -->
 
     <div
-        id="gridCriticos"
-        class="criticos-grid"
-    ></div>
+        id="panelCuelloBotella"
+        class="panel-cuello oculto"
+    >
 
-</div>
-    
+        <strong id="textoCuelloBotella"></strong>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- PANEL CRÍTICOS -->
+    <!-- ================================= -->
+
+    <div
+        id="panelCriticos"
+        class="panel-criticos oculto"
+    >
+
+        <h3 id="tituloCriticos">
+            🚨 Pedidos críticos
+        </h3>
+
+        <div
+            id="gridCriticos"
+            class="criticos-grid"
+        ></div>
+
+    </div>
+
 </section>
+
+
+<!-- ===================================== -->
+<!-- ALERTAS LEGACY -->
+<!-- ===================================== -->
 
 <div
     id="alertaCocina"
@@ -132,13 +176,20 @@
 
 </div>
 
+
+   
+
 <!-- ===================================== -->
-<!-- TABLERO -->
+<!-- TABLERO PRINCIPAL -->
 <!-- ===================================== -->
 
 <main class="tablero-cocina">
 
+
+
+    <!-- ================================= -->
     <!-- PENDIENTES -->
+    <!-- ================================= -->
 
     <section class="columna">
 
@@ -153,7 +204,10 @@
 
     </section>
 
+
+    <!-- ================================= -->
     <!-- PREPARANDO -->
+    <!-- ================================= -->
 
     <section class="columna">
 
@@ -168,7 +222,10 @@
 
     </section>
 
+
+    <!-- ================================= -->
     <!-- LISTOS -->
+    <!-- ================================= -->
 
     <section class="columna">
 
@@ -185,8 +242,17 @@
 
 </main>
 
+
+ <!-- ================================= -->
+    <!-- MÉTRICAS OPERACIONALES -->
+    <!-- ================================= -->
+
+    <div id="metricasOperacionales"
+         class="metricas-operacionales">
+    </div>
+
 <!-- ===================================== -->
-<!-- 📋 MODAL HISTORIAL -->
+<!-- MODAL HISTORIAL -->
 <!-- ===================================== -->
 
 <div
@@ -196,6 +262,10 @@
 >
 
     <div class="modal-contenido">
+
+        <!-- ============================= -->
+        <!-- HEADER MODAL -->
+        <!-- ============================= -->
 
         <div class="modal-header">
 
@@ -210,6 +280,11 @@
             </button>
 
         </div>
+
+
+        <!-- ============================= -->
+        <!-- CONTENIDO HISTORIAL -->
+        <!-- ============================= -->
 
         <div
             id="contenidoHistorial"
@@ -227,6 +302,10 @@
 </div>
 
 
+<!-- ===================================== -->
+<!-- FOOTER -->
+<!-- ===================================== -->
+
 <footer class="footer-panel">
 
     <button onclick="volver()">
@@ -235,6 +314,7 @@
 
 </footer>
 
+
 <!-- ===================================== -->
 <!-- TEMPLATE PANEL CRÍTICOS -->
 <!-- ===================================== -->
@@ -242,6 +322,10 @@
 <template id="templateCritico">
 
     <div class="critico-item">
+
+        <!-- ============================= -->
+        <!-- HEADER -->
+        <!-- ============================= -->
 
         <div class="critico-header">
 
@@ -255,6 +339,11 @@
 
         </div>
 
+
+        <!-- ============================= -->
+        <!-- DATOS -->
+        <!-- ============================= -->
+
         <div class="critico-cliente"></div>
 
         <div class="critico-estado"></div>
@@ -267,7 +356,41 @@
 
 </template>
 
+
+<!-- ===================================== -->
+<!-- SCRIPT -->
+<!-- ===================================== -->
+
+<script src="/modulos/pedidos/pedidos.state.js"></script>
+
+<script src="/modulos/pedidos/pedidos.config.js"></script>
+
+<script src="/modulos/pedidos/pedidos.constants.js"></script>
+
+<script src="/modulos/pedidos/pedidos.utils.js"></script>
+
+<script src="/modulos/pedidos/pedidos.sla.js"></script>
+
+<script src="/modulos/pedidos/pedidos.audio.js"></script>
+
+<script src="/modulos/pedidos/pedidos.render.js"></script>
+
+<script src="/modulos/pedidos/pedidos.monitor.js"></script>
+
+<script src="/modulos/pedidos/pedidos.ui.js"></script>
+
+<script src="/modulos/pedidos/pedidos.actions.js"></script>
+
+<script src="/modulos/pedidos/pedidos.api.js"></script>
+
+<script src="/modulos/pedidos/pedidos.data.js"></script>
+
+<script src="/modulos/pedidos/pedidos.polling.js"></script>
+
+<script src="/modulos/pedidos/pedidos.init.js"></script>
+
 <script src="pedidos.js"></script>
+
 
 </body>
 </html>

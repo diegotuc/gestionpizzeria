@@ -126,39 +126,41 @@ db.run(`
 
 console.log("🔥 CREANDO TABLA PEDIDOS");
 
+// ======================================================
+// 🧠 TABLA HISTORIAL ESTADOS
+// ======================================================
+
 db.run(`
-    CREATE TABLE IF NOT EXISTS pedidos (
+
+    CREATE TABLE IF NOT EXISTS pedidos_estados (
 
         id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-        cliente TEXT NOT NULL,
+        pedido_id INTEGER NOT NULL,
 
-        telefono TEXT,
-
-        direccion TEXT,
-
-        detalle TEXT,
-
-        total REAL NOT NULL DEFAULT 0,
-
-        estado TEXT NOT NULL DEFAULT 'pendiente',
-
-        observaciones TEXT,
+        estado TEXT NOT NULL,
 
         created_at DATETIME DEFAULT (
-            datetime('now', 'localtime')
-        ),
-
-        updated_at DATETIME DEFAULT (
-            datetime('now', 'localtime')
+            datetime('now','localtime')
         )
+
     )
+
 `, (err) => {
 
     if (err) {
-        console.error("❌ Error creando pedidos:", err.message);
-    } else {
-        console.log("✅ Tabla pedidos OK");
+
+        console.error(
+            '❌ Error creando pedidos_estados:',
+            err
+        );
+    }
+
+    else {
+
+        console.log(
+            '✅ Tabla pedidos_estados OK'
+        );
     }
 });
 
