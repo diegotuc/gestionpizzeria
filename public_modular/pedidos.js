@@ -8,58 +8,29 @@
 // 📦 STATE GLOBAL
 // ======================================================
 
-window.PedidosState = {
 
-    // ======================================================
-    // 📦 PEDIDOS
-    // ======================================================
+// ======================================================
+// 🍕 PEDIDOS MODULE
+// CORE MODULAR
+// ======================================================
 
-    pedidos: [],
+window.PedidosModule = {
 
-    // ======================================================
-    // 🤖 IA OPERACIONAL
-    // ======================================================
+    State:
+        window.PedidosState,
 
-    resumenIA: {},
+    API:
+        window.PedidosAPI,
 
-    estadoIAOperacional: {
+    UI:
+        window.PedidosUI,
 
-        nivel: 'normal',
+    Render:
+        window.PedidosRender,
 
-        motivo: 'Sin saturación'
-    },
+    Polling:
+        window.PedidosPolling,
 
-    historialIAOperacional: [],
-
-    // ======================================================
-    // 🔄 CONTROL
-    // ======================================================
-
-    ultimoPedidoActualizado: null,
-
-    ultimoCambioEstado: null,
-
-    ultimaActualizacion: null,
-
-    sistemaActivo: true,
-
-    idsAnteriores: new Set(),
-
-    primeraCarga: true,
-
-    cargandoPedidos: false,
-
-    actualizandoEstado: false,
-
-    filtroEstado: 'todos',
-
-    // ======================================================
-    // 🔊 AUDIO
-    // ======================================================
-
-    audioHabilitado: false,
-
-    ultimaAlertaCritica: 0,
-
-    ultimoSonidoDemora: 0
+    Monitor:
+        window.PedidosMonitor
 };

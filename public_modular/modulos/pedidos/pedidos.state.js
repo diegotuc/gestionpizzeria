@@ -60,18 +60,37 @@ const PedidosState = {
     ultimoSonidoDemora: 0,
 
     // ======================================================
-    // ⚡ CONTROL INTERNO
-    // ======================================================
+// ⚡ CONTROL INTERNO
+// ======================================================
 
-    cargandoPedidos: false,
+cargandoPedidos: false,
 
-    actualizandoEstado: false,
+actualizandoEstado: false,
 
-    primeraCarga: true,
+primeraCarga: true,
 
-    idsAnteriores: new Set()
+idsAnteriores: new Set(),
+
+//
+// ======================================================
+// 🔁 CONTROL RUNTIME POLLING
+// Evita múltiples inicializaciones accidentales
+// y permite registrar los intervals activos.
+// ======================================================
+//
+
+pollingIniciado: false,
+
+intervalos: {
+
+    pedidos: null,
+
+    ui: null,
+
+    monitor: null
+}
+
 };
-
 
 // ======================================================
 // 🌐 EXPORT GLOBAL

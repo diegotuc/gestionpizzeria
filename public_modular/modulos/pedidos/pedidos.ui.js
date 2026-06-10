@@ -100,7 +100,7 @@ function actualizarUI() {
         ).length;
 
     const criticos =
-        obtenerPedidosCriticos()
+        PedidosSLA.obtenerPedidosCriticos()
             .length;
 
     // ======================================================
@@ -181,7 +181,9 @@ function setFiltro(estado) {
         }
     });
 
-    renderPedidos();
+    PedidosRender.renderPedidos(
+        PedidosState.pedidos
+    );
 }
 
 
@@ -302,10 +304,25 @@ async function abrirHistorial() {
             btn.textContent =
                 '👁 Ver detalle';
 
-            btn.onclick = () => {
+            
 
-                verDetallePedido(p.id);
-            };
+              btn.onclick = () => {
+
+    if (
+
+        window.PedidosActions
+
+        &&
+
+        PedidosActions.verDetallePedido
+
+    ) {
+
+        PedidosActions.verDetallePedido(
+            p.id
+        );
+    }
+};
 
             div.appendChild(btn);
 
@@ -322,7 +339,9 @@ async function abrirHistorial() {
 
             container.appendChild(div);
         });
-    }
+
+     } // ← cierre del try
+    
 
     catch (err) {
 
@@ -398,23 +417,41 @@ function irAPedido(id) {
 
 
 // ======================================================
-// 🌐 EXPORT GLOBAL
+// 📦 NAMESPACE UI
 // ======================================================
 
-window.actualizarUI =
-    actualizarUI;
+window.PedidosUI = {
+
+    actualizarUI,
+
+    setFiltro,
+
+    abrirHistorial,
+
+    cerrarHistorial,
+
+    volver,
+
+    irAPedido
+};
+
+
+// ======================================================
+// 🌐 BRIDGES HTML LEGACY
+// ======================================================
 
 window.setFiltro =
-    setFiltro;
+    (...args) =>
+        PedidosUI.setFiltro(...args);
 
 window.abrirHistorial =
-    abrirHistorial;
+    (...args) =>
+        PedidosUI.abrirHistorial(...args);
 
 window.cerrarHistorial =
-    cerrarHistorial;
+    (...args) =>
+        PedidosUI.cerrarHistorial(...args);
 
 window.volver =
-    volver;
-
-window.irAPedido =
-    irAPedido;
+    (...args) =>
+        PedidosUI.volver(...args);

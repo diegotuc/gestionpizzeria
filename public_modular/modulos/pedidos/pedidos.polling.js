@@ -83,15 +83,21 @@ async function obtenerPedidos() {
 
         /*verificarDemorasAutomaticas();*/
 
-        if (typeof verificarDemorasAutomaticas === "function") {
-    verificarDemorasAutomaticas();
-}
-    if (typeof detectarCuelloBotella === "function") {
-    detectarCuelloBotella();
-}
-        
-        actualizarUI();
+        if (
 
+        window.PedidosMonitor
+
+        &&
+
+        PedidosMonitor.verificarDemorasAutomaticas
+
+    ) {
+
+        PedidosMonitor
+            .verificarDemorasAutomaticas();
+    }    
+        
+          PedidosUI.actualizarUI();
     }
 
     catch (err) {
@@ -113,32 +119,100 @@ async function obtenerPedidos() {
 
 function iniciarPollingPedidos() {
 
+    //
+// ======================================================
+// 🛡 EVITAR DOBLE INICIALIZACIÓN
+// ======================================================
+//
+
+if (PedidosState.pollingIniciado) {
+
+    console.warn(
+        "⚠ Polling ya iniciado"
+    );
+
+    return;
+}
+
     obtenerPedidos();
 
+    //
+// ======================================================
+// 🔒 MARCAR POLLING ACTIVO
+// ======================================================
+//
+
+PedidosState.pollingIniciado = true;
+
+//
+// ======================================================
+// 🔁 POLLING PEDIDOS
+// ======================================================
+//
+
+PedidosState.intervalos.pedidos =
     setInterval(() => {
 
         obtenerPedidos();
 
     }, 3000);
 
+
+//
+// ======================================================
+// 🎨 ACTUALIZACIÓN UI
+// ======================================================
+//
+
+PedidosState.intervalos.ui =
     setInterval(() => {
 
-        actualizarUI();
+        PedidosUI.actualizarUI();
 
     }, 1000);
 
+
+//
+// ======================================================
+// 🚨 MONITOREO OPERACIONAL
+// ======================================================
+//
+
+PedidosState.intervalos.monitor =
     setInterval(() => {
 
-    if (typeof verificarDemorasAutomaticas === "function") {
-        verificarDemorasAutomaticas();
-    }
+        if (
 
-    if (typeof detectarCuelloBotella === "function") {
-        detectarCuelloBotella();
-    }
+            window.PedidosMonitor
 
-}, 1000);
+            &&
+
+            PedidosMonitor.verificarDemorasAutomaticas
+
+        ) {
+
+            PedidosMonitor
+                .verificarDemorasAutomaticas();
+        }
+
+        if (
+
+            window.PedidosMonitor
+
+            &&
+
+            PedidosMonitor.detectarCuelloBotella
+
+        ) {
+
+            PedidosMonitor
+                .detectarCuelloBotella();
+        }
+
+    }, 1000);
 }
+
+
 
 
 // ======================================================

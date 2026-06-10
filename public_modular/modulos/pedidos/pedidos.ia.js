@@ -288,22 +288,39 @@ function generarSLAOperacional(
     };
 }
 
+// ======================================================
+// 🤖 NAMESPACE IA
+// ======================================================
+
+window.PedidosIA = {
+
+    evaluarIAOperacional,
+
+    calcularResumenIA,
+
+    detectarSaturacionIA,
+
+    registrarHistorialIA,
+
+    generarSLAOperacional
+};
+
 
 // ======================================================
-// 🌐 EXPORT GLOBAL
+// 🌐 BRIDGES LEGACY
 // ======================================================
 
 window.evaluarIAOperacional =
-    evaluarIAOperacional;
+    PedidosIA.evaluarIAOperacional;
 
 window.calcularResumenIA =
-    calcularResumenIA;
+    PedidosIA.calcularResumenIA;
 
 window.detectarSaturacionIA =
-    detectarSaturacionIA;
+    PedidosIA.detectarSaturacionIA;
 
 window.registrarHistorialIA =
-    registrarHistorialIA;
+    PedidosIA.registrarHistorialIA;
 
 window.generarSLAOperacional =
-    generarSLAOperacional;
+    PedidosIA.generarSLAOperacional;

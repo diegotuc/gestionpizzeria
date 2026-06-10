@@ -35,13 +35,13 @@ function iniciarSistemaPedidos() {
     // 🟡 FILTRO INICIAL
     // ======================================================
 
-    if (
-        window.PedidosActions
+        if (
+        window.PedidosUI
         &&
-        PedidosActions.setFiltro
+        PedidosUI.setFiltro
     ) {
 
-        PedidosActions.setFiltro(
+        PedidosUI.setFiltro(
             'todos'
         );
     }

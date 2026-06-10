@@ -241,8 +241,13 @@ function renderPanelCriticos(
 
         let ia = null;
 
-        if (typeof evaluarIAOperacional === "function") {
-            ia = evaluarIAOperacional(p);
+        if (
+            window.PedidosIA &&
+            typeof PedidosIA.evaluarIAOperacional === "function"
+        ) {
+
+            ia =
+                PedidosIA.evaluarIAOperacional(p);
         }
 
         if (ia) {
@@ -267,9 +272,7 @@ function renderPanelCriticos(
 
         btn.onclick = () => {
 
-            irAPedido(
-                p.id
-            );
+            PedidosUI.irAPedido(p.id);
         };
 
         // ======================================================
@@ -309,7 +312,7 @@ function verificarDemorasAutomaticas() {
     }
 
     const criticos =
-        obtenerPedidosCriticos();
+    PedidosSLA.obtenerPedidosCriticos();
 
     if (!criticos.length) {
         return;
@@ -457,7 +460,7 @@ async function renderMetricasOperacionales() {
 
             <div class="metrica-box">
                 🚨 Pedidos críticos:
-                <b>${obtenerPedidosCriticos().length}</b>
+                <b>${PedidosSLA.obtenerPedidosCriticos().length}</b>
             </div>
 
             <div class="metrica-box">
@@ -485,17 +488,16 @@ async function renderMetricasOperacionales() {
 
 
 // ======================================================
-// 🌐 EXPORT GLOBAL
+// 🌐 EXPORT MODULE
 // ======================================================
 
-window.renderPanelCriticos =
-    renderPanelCriticos;
+window.PedidosMonitor = {
 
-window.verificarDemorasAutomaticas =
-    verificarDemorasAutomaticas;
+    renderPanelCriticos,
 
-window.detectarCuelloBotella =
-    detectarCuelloBotella;
+    verificarDemorasAutomaticas,
 
-window.renderMetricasOperacionales =
-    renderMetricasOperacionales;
+    detectarCuelloBotella,
+
+    renderMetricasOperacionales
+};

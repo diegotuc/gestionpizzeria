@@ -204,16 +204,24 @@ function crearAccionesPedido(
 
         btn.onclick = () => {
 
+            
             if (
-                typeof cambiarEstado
-                === 'function'
-            ) {
 
-                cambiarEstado(
-                    pedido.id,
-                    item.estado
-                );
-            }
+    window.PedidosActions
+
+    &&
+
+    PedidosActions.cambiarEstado
+
+) {
+
+    PedidosActions.cambiarEstado(
+
+        pedido.id,
+
+        item.estado
+    );
+}
         };
 
         acciones.appendChild(btn);
@@ -504,24 +512,56 @@ function renderPedidos(
 
     limpiarColumnas();
 
-    pedidos.forEach(pedido => {
+    // ======================================================
+    // 🎯 FILTRAR PEDIDOS
+    // ======================================================
 
-        // ======================================================
-        // 🚫 OCULTAR FINALIZADOS
-        // ======================================================
+    const pedidosFiltrados =
+        pedidos.filter(pedido => {
 
-        if (
+            // ======================================================
+            // 🚫 OCULTAR FINALIZADOS
+            // ======================================================
 
-            pedido.estado === 'entregado'
+            if (
 
-            ||
+                pedido.estado === 'entregado'
 
-            pedido.estado === 'cancelado'
+                ||
 
-        ) {
+                pedido.estado === 'cancelado'
 
-            return;
-        }
+            ) {
+
+                return false;
+            }
+
+            // ======================================================
+            // 🎛 FILTRO ACTIVO
+            // ======================================================
+
+            if (
+
+                PedidosState.filtroEstado !== 'todos'
+
+                &&
+
+                pedido.estado
+                !== PedidosState.filtroEstado
+
+            ) {
+
+                return false;
+            }
+
+            return true;
+        });
+
+    // ======================================================
+    // 🎨 RENDER
+    // ======================================================
+
+    pedidosFiltrados.forEach(pedido => {
 
         const card =
             crearCardPedido(

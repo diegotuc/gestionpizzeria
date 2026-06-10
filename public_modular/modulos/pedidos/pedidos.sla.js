@@ -327,9 +327,13 @@ function calcularSLA(pedido) {
         obtenerAlertaEtapa(pedido);
 
     const ia =
-        evaluarIAOperacional
-            ? evaluarIAOperacional(pedido)
-            : null;
+    window.PedidosIA
+    &&
+    PedidosIA.evaluarIAOperacional
+        ? PedidosIA.evaluarIAOperacional(
+            pedido
+        )
+        : null;
 
     return {
 
@@ -373,9 +377,6 @@ function obtenerPedidosCriticos() {
 // ======================================================
 // 🌐 EXPORT GLOBAL
 // ======================================================
-
-window.obtenerPedidosCriticos =
-    obtenerPedidosCriticos;
 
 window.PedidosSLA = {
 

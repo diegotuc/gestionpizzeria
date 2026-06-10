@@ -48,24 +48,29 @@ async function cambiarEstado(
             estado
         };
 
-        PedidosState
-            .ultimoPedidoActualizado = id;
+       PedidosState
+    .ultimoPedidoActualizado = id;
 
-        await obtenerPedidos();
-    }
+    // ======================================================
+    // 🔄 REFRESCAR PEDIDOS DESDE MÓDULO POLLING
+    // Evita depender internamente de globals legacy.
+    // ======================================================
 
-    catch (err) {
+    await PedidosPolling.obtenerPedidos();
+        }
 
-        console.error(
-            '❌ Error cambiando estado:',
-            err
-        );
-    }
+        catch (err) {
 
-    finally {
+            console.error(
+                '❌ Error cambiando estado:',
+                err
+            );
+        }
 
-        PedidosState.actualizandoEstado =
-            false;
+        finally {
+
+            PedidosState.actualizandoEstado =
+                false;
     }
 }
 
@@ -126,11 +131,14 @@ async function verDetallePedido(id) {
 
 
 // ======================================================
-// 🌐 EXPORT GLOBAL
+// 📦 NAMESPACE ACTIONS
 // ======================================================
 
-window.cambiarEstado =
-    cambiarEstado;
+window.PedidosActions = {
 
-window.verDetallePedido =
-    verDetallePedido;
+    cambiarEstado,
+
+    verDetallePedido
+};
+
+
