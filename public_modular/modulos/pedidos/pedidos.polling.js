@@ -219,9 +219,6 @@ PedidosState.intervalos.monitor =
 // 🌐 EXPORT GLOBAL
 // ======================================================
 
-window.obtenerPedidos =
-    obtenerPedidos;
-
 window.PedidosPolling = {
 
     obtenerPedidos,

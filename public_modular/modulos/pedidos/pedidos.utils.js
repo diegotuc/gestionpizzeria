@@ -3,6 +3,20 @@
 // pedidos.utils.js
 // ======================================================
 
+// ======================================================
+// 📅 NORMALIZAR FECHA
+// ======================================================
+
+function normalizarFecha(fecha) {
+
+    if (!fecha) return null;
+
+    return new Date(
+        fecha.replace(' ', 'T')
+    );
+}
+
+
 
 // ======================================================
 // ⏱ CALCULAR MINUTOS
@@ -12,11 +26,8 @@ function calcularMinutos(fecha) {
 
     if (!fecha) return 0;
 
-    const fechaNormalizada =
-        fecha.replace(' ', 'T');
-
     const fechaPedido =
-        new Date(fechaNormalizada);
+    normalizarFecha(fecha);
 
     if (
         isNaN(fechaPedido.getTime())
@@ -143,6 +154,9 @@ function estimarDemoraPromedio() {
 // ======================================================
 // 🌐 EXPORT GLOBAL
 // ======================================================
+
+window.normalizarFecha =
+    normalizarFecha;
 
 window.calcularMinutos =
     calcularMinutos;

@@ -397,17 +397,52 @@ function calcularSLA(pedido) {
     // ⏱ TIEMPOS POR ETAPA (MINUTOS)
     // ======================================================
 
-    const tiempoCola = preparing
+    /*const tiempoCola = preparing
         ? (preparing - created) / 60000
         : (now - created) / 60000;
-
+    
     const tiempoCocina = (preparing && ready)
         ? (ready - preparing) / 60000
         : (preparing ? (now - preparing) / 60000 : 0);
 
     const tiempoSalida = (ready && delivered)
         ? (delivered - ready) / 60000
-        : 0;
+        : 0;*/
+
+        // ======================================================
+// ⏱ TIEMPOS POR ETAPA (MINUTOS)
+// ======================================================
+
+const tiempoCola = Math.max(
+
+    0,
+
+    preparing
+        ? (preparing - created) / 60000
+        : (now - created) / 60000
+);
+
+const tiempoCocina = Math.max(
+
+    0,
+
+    (preparing && ready)
+        ? (ready - preparing) / 60000
+        : (
+            preparing
+                ? (now - preparing) / 60000
+                : 0
+        )
+);
+
+const tiempoSalida = Math.max(
+
+    0,
+
+    (ready && delivered)
+        ? (delivered - ready) / 60000
+        : 0
+);
 
     // ======================================================
     // 🚨 UMBRALES SLA
