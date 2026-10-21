@@ -21,6 +21,15 @@ router.get(
     controller.listarHistorial
 );
 
+// ======================================================
+// 📊 MÉTRICAS OPERACIONALES
+// ======================================================
+
+router.get(
+    '/metricas/resumen',
+    controller.obtenerMetricas
+);
+
 
 // ======================================================
 // 📄 DETALLE PEDIDO

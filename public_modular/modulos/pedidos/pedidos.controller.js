@@ -9,15 +9,25 @@ function listar(req, res) {
 
     model.obtenerPedidos((err, rows) => {
 
-        if (err) {
+    if (err) {
 
-            return res.status(500).json({
-                error: 'Error obteniendo pedidos'
-            });
-        }
+        return res.status(500).json({
+            error: 'Error obteniendo pedidos'
+        });
+    }
 
-        res.json(rows);
+    const data = rows.map(pedido => {
+
+        const sla = model.calcularSLA(pedido);
+
+        return {
+            ...pedido,
+            sla
+        };
     });
+
+    res.json(data);
+});
 }
 
 
@@ -147,11 +157,33 @@ function cambiarEstado(req, res) {
     );
 }
 
+// ======================================================
+// 📊 MÉTRICAS OPERACIONALES
+// ======================================================
+
+function obtenerMetricas(req, res) {
+
+    model.obtenerMetricas((err, data) => {
+
+        if (err) {
+
+            return res.status(500).json({
+                error:
+                    'Error obteniendo métricas'
+            });
+        }
+
+        res.json(data);
+    });
+}
+
 
 module.exports = {
     listar,
     listarHistorial,
     obtenerDetalle,
     crear,
-    cambiarEstado
+    cambiarEstado,
+    obtenerMetricas
+
 };

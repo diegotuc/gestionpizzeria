@@ -89,7 +89,7 @@ body {
 
     background: #d32f2f;
 
-    color: white;
+    color: rgb(255, 255, 255);
 
     font-weight: bold;
 
@@ -101,11 +101,6 @@ body {
 
     text-align: center;
 }
-
-
-/* ======================================== */
-/* ALERTAS CRÍTICAS */
-/* ======================================== */
 
 .alerta-criticos {
 
@@ -211,7 +206,7 @@ body {
 
 
 /* ======================================== */
-/* SCROLL PERSONALIZADO */
+/* SCROLL */
 /* ======================================== */
 
 .columna::-webkit-scrollbar {
@@ -314,18 +309,6 @@ body {
 
 
 /* ======================================== */
-/* DEMORADOS */
-/* ======================================== */
-
-.card.demorado {
-
-    border: 2px solid #ff9800;
-
-    background: #fff8e1;
-}
-
-
-/* ======================================== */
 /* PRIORIDAD */
 /* ======================================== */
 
@@ -335,11 +318,6 @@ body {
 
     background: #fff3e0;
 }
-
-
-/* ======================================== */
-/* CRÍTICOS */
-/* ======================================== */
 
 .card.critico {
 
@@ -384,7 +362,7 @@ body {
 
     font-weight: bold;
 
-    color: white;
+    color: rgb(255, 255, 255);
 }
 
 .badge-demorado {
@@ -430,21 +408,19 @@ body {
 
     padding: 10px 14px;
 
-min-width: 52px;
+    min-width: 52px;
 
-min-height: 52px;
+    min-height: 52px;
 
-display: flex;
+    display: flex;
 
-align-items: center;
+    align-items: center;
 
-justify-content: center;
+    justify-content: center;
 
     border-radius: 8px;
 
     cursor: pointer;
-
-    /*background: #eeeeee;*/
 
     transition: 0.2s;
 }
@@ -460,7 +436,6 @@ justify-content: center;
 /* ========================================
    TOOLTIP OPERACIONAL
 ======================================== */
-
 
 .acciones button::after {
 
@@ -499,6 +474,7 @@ justify-content: center;
 
     opacity: 1;
 }
+
 
 /* ======================================== */
 /* MODAL HISTORIAL */
@@ -642,6 +618,11 @@ justify-content: center;
     cursor: pointer;
 }
 
+
+/* ======================================== */
+/* PANEL ALERTAS */
+/* ======================================== */
+
 .panel-alertas-globales {
 
     display: flex;
@@ -654,13 +635,17 @@ justify-content: center;
 }
 
 
+/* ======================================== */
+/* PANEL CRÍTICOS */
+/* ======================================== */
+
 .panel-criticos {
 
     flex: 1;
 
     min-width: 320px;
 
-    max-height: 220px;
+    max-height: 275px;
 
     overflow-y: auto;
 
@@ -678,15 +663,38 @@ justify-content: center;
 }
 
 .panel-criticos.oculto {
+
     display: none;
 }
 
 .panel-criticos h3 {
+
     margin-top: 0;
 }
 
-.critico-item {
 
+/* ======================================== */
+/* GRID CRÍTICOS */
+/* ======================================== */
+
+.criticos-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(260px, 1fr));
+
+    gap: 12px;
+
+    margin-top: 10px;
+}
+
+
+/* ======================================== */
+/* ITEM CRÍTICO */
+/* ======================================== */
+
+.critico-item {
 
     background: rgba(255, 247, 1, 0.256);
 
@@ -700,8 +708,6 @@ justify-content: center;
 
     min-width: 0;
 
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-
     min-height: 140px;
 
     display: flex;
@@ -709,11 +715,246 @@ justify-content: center;
     flex-direction: column;
 
     justify-content: space-between;
+
+    box-shadow:
+        0 2px 6px rgba(0,0,0,0.25);
+}
+
+.critico-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 10px;
+
+    gap: 10px;
+}
+
+
+/* ======================================== */
+/* BOTÓN VER PEDIDO */
+/* ======================================== */
+
+.btn-ir-pedido {
+
+    border: none;
+
+    background: white;
+
+    color: black;
+
+    font-weight: bold;
+
+    border-radius: 8px;
+
+    padding: 6px 10px;
+
+    cursor: pointer;
+}
+
+.btn-ir-pedido:hover {
+
+    transform: scale(1.05);
+}
+
+
+/* ======================================== */
+/* PRIORIDADES OPERACIONALES */
+/* ======================================== */
+
+.prioridad-normal {
+
+    margin-top: 10px;
+
+    color: #007b04;
+
+    background: rgba(255,255,255,.509);
+
+    border: 2px solid rgba(0,0,0,.65);
+}
+
+.prioridad-alta {
+
+margin-top: 10px;
+
+    color: #fff176;
+
+    background: rgba(0,0,0,.509);
+
+    border: 2px solid rgba(0,0,0,.65);
+
+    font-weight: bold;
+}
+
+.prioridad-urgente {
+
+margin-top: 10px;
+
+    color: #ffb74d;
+
+    background: rgba(0,0,0,.509);
+
+    border: 2px solid rgba(0,0,0,.65);
+
+    font-weight: bold;
+}
+
+.prioridad-critica {
+
+    margin-top: 10px;
+
+    background: rgba(0, 0, 0, 0.732);
+
+    border: 2px solid rgba(0, 0, 0, 0.754);
+
+    color: #fff700;
+
+    font-weight: bolder;
+
+    font-size: 18px;
+
+    animation: pulseCritica 1s infinite;
 }
 
 /* ======================================================
-🧠 CUELLO DE BOTELLA
+🚨 SLA OPERACIONAL
 ====================================================== */
+
+.sla-alerta {
+
+    margin-top: 8px;
+
+    padding: 8px 10px;
+
+    border-radius: 8px;
+
+    background: rgba(0, 0, 0, 0.497);
+
+    border-left: 5px solid #d32f2f;
+
+    color: #ffffff;
+
+    font-size: 13x;
+
+    font-weight: bold;
+}
+
+
+/* ======================================================
+⏱ TIEMPO ETAPA SLA
+====================================================== */
+
+.critico-alerta small {
+
+    display: block;
+
+    margin-top: 5px;
+
+    font-size: 12px;
+
+    opacity: 0.9;
+}
+
+/* ======================================================
+🎨 ENVEJECIMIENTO VISUAL OPERACIONAL
+FASE 3.4.A
+====================================================== */
+
+.card.tiempo-normal {
+
+    filter: brightness(1);
+}
+
+.card.tiempo-atencion {
+
+    box-shadow:
+        0 0 10px rgba(255,193,7,0.5);
+}
+
+.card.tiempo-alerta {
+
+    box-shadow:
+        0 0 14px rgba(255,152,0,0.7);
+
+    transform: scale(1.01);
+}
+
+.card.tiempo-critico {
+
+    box-shadow:
+        0 0 18px rgba(244,67,54,0.9);
+
+    animation:
+        pulseCritica 1s infinite;
+}
+
+/* ======================================== */
+/* ANIMACIÓN CRÍTICA */
+/* ======================================== */
+
+@keyframes pulseCritica {
+
+    0% {
+
+        opacity: 1;
+    }
+
+    50% {
+
+        opacity: 0.4;
+    }
+
+    100% {
+
+        opacity: 1;
+    }
+}
+
+
+/* ======================================== */
+/* COLORES CONTEXTUALES */
+/* ======================================== */
+
+.critico-item.critico-pendiente {
+
+    background:
+        rgba(255, 152, 0, 0.75);
+
+    border:
+        2px solid #e68900;
+
+    color: #1a1a1a;
+}
+
+.critico-item.critico-preparando {
+
+    background:
+        rgba(25, 118, 210, 0.78);
+
+    border:
+        2px solid #0d5cad;
+
+    color: white;
+}
+
+.critico-item.critico-listo {
+
+    background:
+        rgba(46, 125, 50, 0.78);
+
+    border:
+        2px solid #256628;
+
+    color: white;
+}
+
+
+/* ======================================== */
+/* CUELLO DE BOTELLA */
+/* ======================================== */
 
 .panel-cuello {
 
@@ -737,221 +978,207 @@ justify-content: center;
 
     font-weight: bold;
 
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    box-shadow:
+        0 2px 10px rgba(0,0,0,0.3);
 }
 
 .panel-cuello.oculto {
+
     display: none;
 }
 
 .cuello-rojo {
+
     border-left-color: red;
 }
 
 .cuello-naranja {
+
     border-left-color: orange;
 }
 
 .cuello-amarillo {
+
     border-left-color: yellow;
 }
 
 /* ======================================================
-🚨 GRID PANEL CRÍTICOS
+✨ FEEDBACK VISUAL CAMBIO ESTADO
+FASE 3.4.A
 ====================================================== */
 
-.criticos-grid {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(auto-fit, minmax(260px, 1fr));
-
-    gap: 12px;
-
-    margin-top: 10px;
-}
-
-
-
-.critico-header {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    margin-bottom: 10px;
-
-    gap: 10px;
-}
-
-.btn-ir-pedido {
-
-    border: none;
-
-    background: white;
-
-    color: black;
-
-    font-weight: bold;
-
-    border-radius: 8px;
-
-    padding: 6px 10px;
-
-    cursor: pointer;
-}
-
-
-/* ======================================================
-   🧠 PRIORIDADES OPERACIONALES
-====================================================== */
-
-.prioridad-normal {
-
-    color: #007b04;
-    background: rgba(255, 255, 255, 0.509);
-    border: 2px solid rgba(0,0,0,0.65);
-}
-
-.prioridad-alta {
-
-    color: #fff176;
-    background: rgba(0, 0, 0, 0.509);
-    border: 2px solid rgba(0,0,0,0.65);
-    font-weight: bold;
-}
-
-.prioridad-urgente {
-
-    color: #ffb74d;
-    background: rgba(0, 0, 0, 0.509);
-    border: 2px solid rgba(0,0,0,0.65);
-    font-weight: bold;
-}
-
-.prioridad-critica {
-
-    margin-top: 5px;
-    background: rgba(0, 0, 0, 0.509);
-    border: 2px solid rgba(0,0,0,0.65);
-    color: #ff0000;
-
-    font-weight: bolder;
-
-    font-size: 18px;
+.flash-preparando {
 
     animation:
-        pulseCritica 1s infinite;
+        flashPreparando 2s ease;
 }
 
-/* ======================================================
-   🚨 ANIMACIÓN CRÍTICA
-====================================================== */
+.flash-listo {
 
-@keyframes pulseCritica {
-
-    0% {
-
-        opacity: 1;
-    }
-
-    50% {
-
-        opacity: 0.4;
-    }
-
-    100% {
-
-        opacity: 1;
-    }
+    animation:
+        flashListo 2s ease;
 }
 
+.flash-entregado {
 
-/* ======================================================
-🎨 COLORES CONTEXTUALES POR ESTADO
-FASE 3.5
-====================================================== */
-
-
-
-
-
-/* ======================================================
-🟢 LISTO
-====================================================== */
-
-/* aqui solo se colore el borde izquierdo con el color del
-lugar donde se encuentra el pedido
-.critico-item.critico-listo {
-
-    background:
-        rgba(46, 125, 50, 0.20);
-
-    border-left:
-        6px solid #2e7d32;
-
-    color: #111;
-}*/
-
-/* ======================================================
-🎨 COLORES CONTEXTUALES POR ESTADO
-FASE 3.5
-====================================================== */
-/* ======================================================
-🟠 PENDIENTE
-====================================================== */
-
-.critico-item.critico-pendiente {
-
-    background:
-        rgba(255, 152, 0, 0.75);
-
-    border:
-        2px solid #e68900;
-
-    color: #1a1a1a;
+    animation:
+        flashEntregado 2s ease;
 }
 
+.flash-cancelado {
+
+    animation:
+        flashCancelado 2s ease;
+}
 
 /* ======================================================
 🔵 PREPARANDO
 ====================================================== */
 
-.critico-item.critico-preparando {
+@keyframes flashPreparando {
 
-    background:
-        rgba(25, 118, 210, 0.78);
+    0% {
 
-    border:
-        2px solid #0d5cad;
+        box-shadow:
+            0 0 0px rgba(25,118,210,0);
+    }
 
-    color: white;
+    50% {
+
+        box-shadow:
+            0 0 25px rgba(25,118,210,1);
+    }
+
+    100% {
+
+        box-shadow:
+            0 0 0px rgba(25,118,210,0);
+    }
 }
 
 /* ======================================================
 🟢 LISTO
 ====================================================== */
 
-.critico-item.critico-listo {
+@keyframes flashListo {
 
-    background:
-        rgba(46, 125, 50, 0.78);
+    0% {
 
-    border:
-        2px solid #256628;
+        box-shadow:
+            0 0 0px rgba(46,125,50,0);
+    }
 
-    color: white;
+    50% {
+
+        box-shadow:
+            0 0 25px rgba(46,125,50,1);
+    }
+
+    100% {
+
+        box-shadow:
+            0 0 0px rgba(46,125,50,0);
+    }
 }
 
-.btn-ir-pedido:hover {
+/* ======================================================
+⚪ ENTREGADO
+====================================================== */
 
-    transform: scale(1.05);
+@keyframes flashEntregado {
+
+    0% {
+
+        box-shadow:
+            0 0 0px rgba(158,158,158,0);
+    }
+
+    50% {
+
+        box-shadow:
+            0 0 25px rgba(158,158,158,1);
+    }
+
+    100% {
+
+        box-shadow:
+            0 0 0px rgba(158,158,158,0);
+    }
 }
 
+/* ======================================================
+🔴 CANCELADO
+====================================================== */
 
+@keyframes flashCancelado {
+
+    0% {
+
+        box-shadow:
+            0 0 0px rgba(198,40,40,0);
+    }
+
+    50% {
+
+        box-shadow:
+            0 0 25px rgba(198,40,40,1);
+    }
+
+    100% {
+
+        box-shadow:
+            0 0 0px rgba(198,40,40,0);
+    }
+}
+
+/* ======================================== */
+/* MÉTRICAS OPERACIONALES */
+/* ======================================== */
+
+.metricas-operacionales {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(220px, 1fr));
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
+.metrica-box {
+
+    background: white;
+
+    border-left: 6px solid #ff6f00;
+
+    border-radius: 12px;
+
+    padding: 16px;
+
+    margin-top: 20px;
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.1);
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    color: #333;
+}
+
+.metrica-box b {
+
+    display: block;
+
+    margin-top: 8px;
+
+    font-size: 24px;
+
+    color: #111;
+}
 
 
 /* ======================================== */
